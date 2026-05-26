@@ -51,7 +51,14 @@
     .section-header { padding: 16px 16px 8px; display: flex; align-items: center; justify-content: space-between; }
     .section-title { font-size: 13px; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.8px; }
     .product-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 8px 16px 16px; }
-    .product-card { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); padding: 14px; display: flex; flex-direction: column; gap: 6px; }
+    .product-card { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); padding: 14px; display: flex; flex-direction: column; gap: 6px; overflow: hidden; }
+    .prod-photo { width: 100%; height: 140px; object-fit: contain; border-radius: var(--radius-sm); margin-bottom: 4px; background: var(--surface-3); }
+    .prod-photo-placeholder { width: 100%; height: 80px; background: var(--surface-3); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; color: var(--text-3); font-size: 11px; margin-bottom: 4px; }
+    .photo-upload-area { border: 2px dashed var(--border); border-radius: var(--radius-sm); padding: 16px; text-align: center; cursor: pointer; transition: border-color 0.15s; color: var(--text-3); font-size: 13px; }
+    .photo-upload-area:hover { border-color: var(--accent); color: var(--accent); }
+    .photo-preview { position: relative; }
+    .photo-preview img { width: 100%; height: 140px; object-fit: cover; border-radius: var(--radius-sm); display: block; }
+    .photo-remove { position: absolute; top: 6px; right: 6px; background: rgba(0,0,0,0.5); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; }
     .prod-ref { font-size: 10px; font-weight: 600; color: var(--accent); letter-spacing: 0.5px; text-transform: uppercase; }
     .prod-name { font-size: 13px; font-weight: 600; color: var(--text-1); line-height: 1.35; }
     .prod-color { font-size: 11px; color: var(--text-3); }
@@ -183,6 +190,28 @@
     .editing-banner { background: #fef3c7; border: 1.5px solid #fbbf24; border-radius: var(--radius-sm); padding: 10px 14px; margin: 12px 16px 0; display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 500; color: #92400e; }
     .editing-banner svg { width: 16px; height: 16px; stroke: #d97706; fill: none; stroke-width: 2; flex-shrink: 0; }
     .editing-cancel { margin-left: auto; background: none; border: 1px solid #fbbf24; border-radius: 6px; padding: 3px 10px; font-size: 12px; font-weight: 600; color: #92400e; cursor: pointer; }
+
+    /* Stock */
+    .stock-card { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); margin: 0 16px 10px; overflow: hidden; }
+    .stock-card-header { padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+    .stock-card-ref { font-size: 11px; font-weight: 700; color: var(--accent); text-transform: uppercase; }
+    .stock-card-name { font-size: 13px; font-weight: 600; color: var(--text-1); margin-top: 2px; }
+    .stock-card-total { font-size: 13px; font-family: 'DM Mono', monospace; font-weight: 600; color: var(--text-2); }
+    .stock-card-body { border-top: 1px solid var(--border); padding: 12px 16px; display: none; }
+    .stock-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .stock-color-label { font-size: 13px; color: var(--text-1); flex: 1; font-weight: 500; }
+    .stock-input { width: 70px; padding: 6px 10px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-size: 14px; font-family: 'DM Mono', monospace; text-align: center; outline: none; background: var(--surface-3); }
+    .stock-input:focus { border-color: var(--accent); background: var(--surface); }
+    .stock-input.low { border-color: var(--red); background: var(--red-light); color: var(--red); }
+    .stock-input.ok { border-color: #22c55e; background: #dcfce7; }
+    .stock-badge { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 20px; }
+    .stock-badge.low { background: var(--red-light); color: var(--red); }
+    .stock-badge.ok { background: #dcfce7; color: #15803d; }
+    .stock-badge.zero { background: var(--surface-3); color: var(--text-3); }
+    .stock-alert-bar { background: var(--red-light); border: 1.5px solid var(--red); border-radius: var(--radius-sm); padding: 10px 14px; margin: 12px 16px; display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; color: var(--red); }
+    .prod-stock-badge { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 20px; margin-top: 2px; display: inline-block; }
+    .seuil-row { display: flex; align-items: center; gap: 8px; margin-top: 4px; padding-top: 10px; border-top: 1px dashed var(--border); }
+    .seuil-label { font-size: 12px; color: var(--text-3); flex: 1; }
     .color-chip { padding: 6px 14px; border-radius: 20px; border: 2px solid var(--border); background: var(--surface-3); font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.15s; color: var(--text-2); }
     .color-chip.selected { border-color: var(--accent); background: var(--accent-light); color: var(--accent-dark); font-weight: 600; }
     .cat-filter-bar { display: flex; gap: 8px; padding: 10px 16px; overflow-x: auto; scrollbar-width: none; background: var(--surface); border-bottom: 1px solid var(--border); }
@@ -355,6 +384,19 @@
   <div id="orders-list"></div>
 </div>
 
+<!-- Stock -->
+<div id="tab-stock" class="tab">
+  <div class="section-header">
+    <span class="section-title" id="stock-count">Stock</span>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <span style="font-size:12px;color:var(--text-3);">Seuil alerte</span>
+      <input type="number" id="stock-seuil" value="5" min="0" style="width:50px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:'DM Mono',monospace;text-align:center;outline:none;background:var(--surface-3);" oninput="renderStock()">
+    </div>
+  </div>
+  <div id="stock-alerts"></div>
+  <div id="stock-list" style="padding-bottom:100px;"></div>
+</div>
+
 <!-- NAV -->
 <nav class="bottom-nav">
   <button class="nav-btn active" onclick="showTab(0)" id="nav-0">
@@ -373,6 +415,11 @@
   <button class="nav-btn" onclick="showTab(3)" id="nav-3">
     <svg viewBox="0 0 24 24"><path d="M12 20V10M18 20V4M6 20v-6"/></svg>
     <span>Commandes</span>
+  </button>
+  <button class="nav-btn" onclick="showTab(4)" id="nav-4">
+    <svg viewBox="0 0 24 24"><path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+    <span>Stock</span>
+    <span class="nav-badge" id="stock-alert-count" style="display:none;background:var(--red);">!</span>
   </button>
 </nav>
 
@@ -411,6 +458,18 @@
     <div class="form-group">
       <label class="form-label">Couleur</label>
       <input class="form-input" id="f-color" type="text" placeholder="ex: Bleu marine">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Photo du produit</label>
+      <input type="file" id="f-photo-input" accept="image/*" style="display:none;" onchange="previewPhoto(event)">
+      <div id="f-photo-area" class="photo-upload-area" onclick="document.getElementById('f-photo-input').click()">
+        <svg viewBox="0 0 24 24" style="width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.5;margin-bottom:6px;"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+        <div>Appuyez pour ajouter une photo</div>
+      </div>
+      <div id="f-photo-preview" class="photo-preview" style="display:none;">
+        <img id="f-photo-img" src="">
+        <button class="photo-remove" onclick="removePhoto()">×</button>
+      </div>
     </div>
     <div style="display:flex;gap:10px;margin-top:8px;">
       <button class="btn-secondary" style="flex:1;justify-content:center;" onclick="closeProductModal()">Annuler</button>
@@ -619,20 +678,52 @@
       container.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg><p>Aucun produit trouvé</p></div>';
       return;
     }
-    container.innerHTML = list.map(p => `
+    container.innerHTML = list.map(p => {
+      const colors = p.color && p.color !== '-' ? p.color.split(',').map(c => c.trim()) : ['standard'];
+      const seuil = parseInt(document.getElementById('stock-seuil')?.value) || 5;
+      const stockInfo = colors.map(c => getStock(p.id, c)).filter(q => q !== null);
+      const totalStock = stockInfo.reduce((s, q) => s + q, 0);
+      const hasLow = stockInfo.some(q => q <= seuil);
+      const stockBadge = stockInfo.length > 0
+        ? `<span class="prod-stock-badge" style="background:${hasLow ? 'var(--red-light)' : '#dcfce7'};color:${hasLow ? 'var(--red)' : '#15803d'};">${hasLow ? '⚠ Stock bas' : totalStock + ' colis'}</span>`
+        : '';
+      return `
       <div class="product-card">
-        <div class="prod-ref">${p.ref}</div>
+        ${p.photo ? `<img class="prod-photo" src="${p.photo}" alt="${p.name}">` : ''}
+        <div class="prod-ref">${p.ref !== '-' ? p.ref : ''}</div>
         <div class="prod-name">${p.name}</div>
-        <div class="prod-color">${p.color}</div>
+        <div class="prod-color">${p.color !== '-' ? p.color : ''}</div>
         <div class="prod-price">${p.price.toFixed(2)} €</div>
         <div class="prod-colis">${p.colis} pcs / colis</div>
+        ${stockBadge}
         <button class="btn-add" onclick="openQtyModal(${p.id})">
           <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Ajouter
         </button>
-      </div>`).join('');
+      </div>`}).join('');
   }
 
-  let selectedColor = null;
+  let currentPhotoBase64 = null;
+
+  function previewPhoto(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      currentPhotoBase64 = e.target.result;
+      document.getElementById('f-photo-img').src = currentPhotoBase64;
+      document.getElementById('f-photo-area').style.display = 'none';
+      document.getElementById('f-photo-preview').style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function removePhoto() {
+    currentPhotoBase64 = null;
+    document.getElementById('f-photo-input').value = '';
+    document.getElementById('f-photo-img').src = '';
+    document.getElementById('f-photo-area').style.display = 'block';
+    document.getElementById('f-photo-preview').style.display = 'none';
+  }
 
   function openQtyModal(id) {
     pendingCartProductId = id;
@@ -690,7 +781,12 @@
 
   function openProductModal(id) {
     editingProductId = id;
+    currentPhotoBase64 = null;
     document.getElementById('product-modal-title').textContent = id ? 'Modifier le produit' : 'Nouveau produit';
+    // Reset photo
+    document.getElementById('f-photo-input').value = '';
+    document.getElementById('f-photo-area').style.display = 'block';
+    document.getElementById('f-photo-preview').style.display = 'none';
     if (id) {
       const p = products.find(x => x.id === id);
       document.getElementById('f-ref').value = p.ref;
@@ -699,6 +795,12 @@
       document.getElementById('f-colis').value = p.colis;
       document.getElementById('f-color').value = p.color;
       document.getElementById('f-cat').value = p.cat || 'Chaussures';
+      if (p.photo) {
+        currentPhotoBase64 = p.photo;
+        document.getElementById('f-photo-img').src = p.photo;
+        document.getElementById('f-photo-area').style.display = 'none';
+        document.getElementById('f-photo-preview').style.display = 'block';
+      }
     } else {
       ['f-ref','f-name','f-price','f-colis','f-color'].forEach(i => document.getElementById(i).value = '');
       document.getElementById('f-cat').value = 'Chaussures';
@@ -719,10 +821,10 @@
     if (!ref || !name || isNaN(price) || price <= 0) { toast('Veuillez remplir tous les champs', 'error'); return; }
     if (editingProductId) {
       const idx = products.findIndex(p => p.id === editingProductId);
-      products[idx] = {...products[idx], ref, name, price, color, colis, cat};
+      products[idx] = {...products[idx], ref, name, price, color, colis, cat, photo: currentPhotoBase64 || products[idx].photo || null};
       toast('Produit modifié');
     } else {
-      products.push({ id: Date.now(), ref, name, price, color, colis, cat }); // Date.now() >> 1000
+      products.push({ id: Date.now(), ref, name, price, color, colis, cat, photo: currentPhotoBase64 || null });
       toast('Produit ajouté');
     }
     saveData(); renderProducts(products); renderProductListManage(); closeProductModal();
@@ -885,6 +987,7 @@
       }, 100);
     } else {
       orders.unshift(orderData);
+      decreaseStockOnOrder(cart);
       toast('Commande validée — ' + finalTotal.toFixed(2).replace('.', ',') + ' €');
       saveData(); cart = [];
       document.getElementById('discount').value = 0;
@@ -1225,7 +1328,7 @@
   }
 
   function showTab(n) {
-    ['catalog','productlist','cart','orders'].forEach((name, i) => {
+    ['catalog','productlist','cart','orders','stock'].forEach((name, i) => {
       document.getElementById('tab-' + name).classList.toggle('active', i === n);
       document.getElementById('nav-' + i).classList.toggle('active', i === n);
     });
@@ -1233,9 +1336,144 @@
     if (n === 1) renderProductListManage();
     if (n === 2) updateCart();
     if (n === 3) renderOrders();
+    if (n === 4) renderStock();
+  }
+
+  // ===== STOCK =====
+  // Structure: stock[productId::color] = quantité (en colis)
+  let stock = JSON.parse(localStorage.getItem('yeeva_stock')) || {};
+
+  function saveStock() {
+    localStorage.setItem('yeeva_stock', JSON.stringify(stock));
+  }
+
+  function getStockKey(productId, color) {
+    return productId + '::' + (color && color !== '-' ? color : 'standard');
+  }
+
+  function getStock(productId, color) {
+    const key = getStockKey(productId, color);
+    return stock[key] !== undefined ? stock[key] : null;
+  }
+
+  function setStock(productId, color, qty) {
+    const key = getStockKey(productId, color);
+    stock[key] = Math.max(0, qty);
+    saveStock();
+    updateStockAlertBadge();
+  }
+
+  function updateStockAlertBadge() {
+    const seuil = parseInt(document.getElementById('stock-seuil')?.value) || 5;
+    const alerts = products.filter(p => {
+      const colors = p.color && p.color !== '-' ? p.color.split(',').map(c => c.trim()) : ['standard'];
+      return colors.some(c => {
+        const q = getStock(p.id, c);
+        return q !== null && q <= seuil;
+      });
+    });
+    const badge = document.getElementById('stock-alert-count');
+    if (badge) {
+      if (alerts.length > 0) {
+        badge.textContent = alerts.length;
+        badge.style.display = 'flex';
+      } else {
+        badge.style.display = 'none';
+      }
+    }
+  }
+
+  function renderStock() {
+    const seuil = parseInt(document.getElementById('stock-seuil').value) || 5;
+    const alertsEl = document.getElementById('stock-alerts');
+    const listEl = document.getElementById('stock-list');
+    const countEl = document.getElementById('stock-count');
+
+    // Produits avec stock défini
+    const productsWithStock = products.filter(p => {
+      const colors = p.color && p.color !== '-' ? p.color.split(',').map(c => c.trim()) : ['standard'];
+      return colors.some(c => getStock(p.id, c) !== null);
+    });
+
+    // Alertes
+    const lowStockItems = [];
+    productsWithStock.forEach(p => {
+      const colors = p.color && p.color !== '-' ? p.color.split(',').map(c => c.trim()) : ['standard'];
+      colors.forEach(c => {
+        const q = getStock(p.id, c);
+        if (q !== null && q <= seuil) {
+          lowStockItems.push({ p, color: c, qty: q });
+        }
+      });
+    });
+
+    alertsEl.innerHTML = lowStockItems.length ? `
+      <div class="stock-alert-bar">
+        <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:var(--red);fill:none;stroke-width:2;flex-shrink:0;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        ${lowStockItems.length} article(s) en stock bas — ${lowStockItems.map(i => i.p.ref !== '-' ? i.p.ref : i.p.name).join(', ')}
+      </div>` : '';
+
+    countEl.textContent = `Stock · ${productsWithStock.length} produit(s)`;
+
+    listEl.innerHTML = products.map(p => {
+      const colors = p.color && p.color !== '-' ? p.color.split(',').map(c => c.trim()) : ['standard'];
+      const totalStock = colors.reduce((s, c) => {
+        const q = getStock(p.id, c);
+        return s + (q !== null ? q : 0);
+      }, 0);
+      const hasStock = colors.some(c => getStock(p.id, c) !== null);
+      const hasLow = colors.some(c => { const q = getStock(p.id, c); return q !== null && q <= seuil; });
+
+      return `<div class="stock-card">
+        <div class="stock-card-header" onclick="toggleStockCard('sc-${p.id}')">
+          <div>
+            <div class="stock-card-ref">${p.ref !== '-' ? p.ref : '—'} · ${p.cat || 'Chaussures'}</div>
+            <div class="stock-card-name">${p.name}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            ${hasLow ? '<span class="stock-badge low">⚠ Stock bas</span>' : hasStock ? '<span class="stock-badge ok">✓ OK</span>' : '<span class="stock-badge zero">Non défini</span>'}
+            ${hasStock ? `<span class="stock-card-total">${totalStock} colis</span>` : ''}
+            <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:var(--text-3);fill:none;stroke-width:2;"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+        </div>
+        <div class="stock-card-body" id="sc-${p.id}">
+          ${colors.map(c => {
+            const q = getStock(p.id, c);
+            const isLow = q !== null && q <= seuil;
+            return `<div class="stock-row">
+              <span class="stock-color-label">${c === 'standard' ? 'Standard' : c}</span>
+              <input class="stock-input ${q === null ? '' : isLow ? 'low' : 'ok'}"
+                type="number" min="0" placeholder="—"
+                value="${q !== null ? q : ''}"
+                oninput="setStock(${p.id}, '${c}', parseInt(this.value)||0); renderStock()">
+              <span style="font-size:11px;color:var(--text-3);">colis</span>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>`;
+    }).join('');
+
+    updateStockAlertBadge();
+  }
+
+  function toggleStockCard(id) {
+    const el = document.getElementById(id);
+    el.style.display = el.style.display === 'block' ? 'none' : 'block';
+  }
+
+  function decreaseStockOnOrder(orderItems) {
+    orderItems.forEach(item => {
+      const key = getStockKey(item.id, item.color);
+      if (stock[key] !== undefined) {
+        stock[key] = Math.max(0, stock[key] - item.qty);
+      }
+    });
+    saveStock();
+    updateStockAlertBadge();
   }
 
   renderProducts(products);
+  updateStockAlertBadge();
 
   // Désactiver et supprimer le service worker (cause des problèmes de cache)
   if ('serviceWorker' in navigator) {
