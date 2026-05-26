@@ -218,6 +218,11 @@
     .cat-filter-bar::-webkit-scrollbar { display: none; }
     .cat-chip { padding: 6px 14px; border-radius: 20px; border: 1.5px solid var(--border); background: var(--surface-3); font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; color: var(--text-2); transition: all 0.15s; }
     .cat-chip.active { background: var(--navy); color: white; border-color: var(--navy); }
+    .cat-manage-row { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+    .cat-manage-name { flex: 1; font-size: 14px; font-weight: 500; color: var(--text-1); }
+    .cat-manage-emoji { font-size: 18px; width: 30px; text-align: center; }
+    .cat-manage-btn { background: none; border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; font-size: 12px; cursor: pointer; color: var(--text-2); }
+    .cat-manage-btn.del { color: var(--red); border-color: var(--red); }
 
     /* Export actions in order card */
     .order-export-btn { padding: 4px 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface-3); font-size: 11px; font-weight: 500; color: var(--text-2); cursor: pointer; display: inline-flex; align-items: center; gap: 4px; }
@@ -267,12 +272,15 @@
 
 <header>
   <div class="header-brand">
-    <div class="header-logo">Y</div>
+    <div class="header-logo" id="header-logo">Y</div>
     <div>
-      <div class="header-title">YEEVA Seller</div>
-      <div class="header-sub">Prise de commande grossiste</div>
+      <div class="header-title" id="header-title">YEEVA Seller</div>
+      <div class="header-sub" id="header-sub">Prise de commande grossiste</div>
     </div>
   </div>
+  <button onclick="openSettingsModal()" style="background:none;border:none;cursor:pointer;padding:8px;color:var(--text-3);">
+    <svg viewBox="0 0 24 24" style="width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+  </button>
 </header>
 
 <div class="toast-container" id="toast-container"></div>
@@ -299,23 +307,21 @@
       <input type="text" id="search" placeholder="Référence, nom, couleur…" oninput="filterProducts()">
     </div>
   </div>
-  <div class="cat-filter-bar" id="cat-filter-bar">
-    <button class="cat-chip active" onclick="setCat(this, '')" >Tous</button>
-    <button class="cat-chip" onclick="setCat(this, 'Chaussures')">👟 Chaussures</button>
-    <button class="cat-chip" onclick="setCat(this, 'Jouets')">🧸 Jouets</button>
-    <button class="cat-chip" onclick="setCat(this, 'Matériel')">🔧 Matériel</button>
-    <button class="cat-chip" onclick="setCat(this, 'Accessoires')">🎒 Accessoires</button>
-  </div>
+  <div class="cat-filter-bar" id="cat-filter-bar"></div>
   <div class="section-header"><span class="section-title" id="catalog-count">Catalogue</span></div>
   <div id="products" class="product-grid"></div>
 </div>
 
 <!-- Liste Produits -->
 <div id="tab-productlist" class="tab">
-  <div style="padding:16px 16px 8px;">
-    <button class="btn-primary" onclick="openProductModal(null)">
+  <div style="padding:16px 16px 8px;display:flex;gap:8px;">
+    <button class="btn-primary" style="flex:2;" onclick="openProductModal(null)">
       <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:white;fill:none;stroke-width:2.5"><path d="M12 5v14M5 12h14"/></svg>
       Ajouter un produit
+    </button>
+    <button class="btn-secondary" style="flex:1;justify-content:center;" onclick="openCatModal()">
+      <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h7"/></svg>
+      Catégories
     </button>
   </div>
   <div class="section-header"><span class="section-title" id="product-list-count">Produits</span></div>
@@ -448,12 +454,7 @@
     </div>
     <div class="form-group">
       <label class="form-label">Catégorie</label>
-      <select class="form-input" id="f-cat">
-        <option value="Chaussures">👟 Chaussures</option>
-        <option value="Jouets">🧸 Jouets</option>
-        <option value="Matériel">🔧 Matériel</option>
-        <option value="Accessoires">🎒 Accessoires</option>
-      </select>
+      <select class="form-input" id="f-cat"></select>
     </div>
     <div class="form-group">
       <label class="form-label">Couleur</label>
@@ -548,9 +549,157 @@
 </div>
 
 
+<!-- MODAL RÉGLAGES -->
+<div class="modal-overlay" id="settings-modal" onclick="closeSettingsModal(event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">⚙️ Réglages</div>
+    <div class="form-group">
+      <label class="form-label">Nom de l'entreprise</label>
+      <input class="form-input" id="s-company" type="text" placeholder="ex: Mon Entreprise">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Slogan / sous-titre</label>
+      <input class="form-input" id="s-subtitle" type="text" placeholder="ex: Prise de commande grossiste">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Initiale (logo)</label>
+      <input class="form-input" id="s-initial" type="text" placeholder="ex: Y" maxlength="2" style="text-transform:uppercase;">
+    </div>
+    <div style="display:flex;gap:10px;margin-top:8px;">
+      <button class="btn-secondary" style="flex:1;justify-content:center;" onclick="closeSettingsModal()">Annuler</button>
+      <button class="btn-primary" style="flex:2;" onclick="saveSettings()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CATÉGORIES -->
+<div class="modal-overlay" id="cat-modal" onclick="closeCatModal(event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Gérer les catégories</div>
+    <div id="cat-list-manage" style="margin-bottom:16px;max-height:250px;overflow-y:auto;"></div>
+    <div style="display:flex;gap:8px;margin-bottom:12px;">
+      <input class="form-input" id="new-cat-emoji" placeholder="🏷️" style="width:56px;text-align:center;">
+      <input class="form-input" id="new-cat-name" placeholder="Nom de la catégorie" style="flex:1;">
+    </div>
+    <button class="btn-primary" style="width:100%;justify-content:center;" onclick="addCategory()">
+      <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:white;fill:none;stroke-width:2.5"><path d="M12 5v14M5 12h14"/></svg>
+      Ajouter la catégorie
+    </button>
+    <button class="btn-secondary" style="width:100%;justify-content:center;margin-top:8px;" onclick="closeCatModal()">Fermer</button>
+  </div>
+</div>
+
 <script>
   // Nettoyage de l'ancien localStorage au premier chargement
   localStorage.removeItem('yeeva_products');
+
+  // ===== RÉGLAGES =====
+  let settings = JSON.parse(localStorage.getItem('yeeva_settings')) || {
+    company: 'YEEVA Seller',
+    subtitle: 'Prise de commande grossiste',
+    initial: 'Y'
+  };
+
+  function applySettings() {
+    document.getElementById('header-title').textContent = settings.company;
+    document.getElementById('header-sub').textContent = settings.subtitle;
+    document.getElementById('header-logo').textContent = settings.initial || settings.company.charAt(0).toUpperCase();
+    document.title = settings.company;
+  }
+
+  function openSettingsModal() {
+    document.getElementById('s-company').value = settings.company;
+    document.getElementById('s-subtitle').value = settings.subtitle;
+    document.getElementById('s-initial').value = settings.initial;
+    document.getElementById('settings-modal').classList.add('open');
+  }
+
+  function closeSettingsModal(e) {
+    if (!e || e.target === document.getElementById('settings-modal'))
+      document.getElementById('settings-modal').classList.remove('open');
+  }
+
+  function saveSettings() {
+    settings.company = document.getElementById('s-company').value.trim() || 'YEEVA Seller';
+    settings.subtitle = document.getElementById('s-subtitle').value.trim() || 'Prise de commande grossiste';
+    settings.initial = document.getElementById('s-initial').value.trim().toUpperCase() || settings.company.charAt(0).toUpperCase();
+    localStorage.setItem('yeeva_settings', JSON.stringify(settings));
+    applySettings();
+    document.getElementById('settings-modal').classList.remove('open');
+    toast('Réglages enregistrés');
+  }
+
+  // ===== CATÉGORIES DYNAMIQUES =====
+  const DEFAULT_CATEGORIES = [
+    { name: 'Chaussures', emoji: '👟' },
+    { name: 'Jouets', emoji: '🧸' },
+    { name: 'Matériel', emoji: '🔧' },
+    { name: 'Accessoires', emoji: '🎒' }
+  ];
+  let categories = JSON.parse(localStorage.getItem('yeeva_categories')) || DEFAULT_CATEGORIES;
+
+  function saveCategories() {
+    localStorage.setItem('yeeva_categories', JSON.stringify(categories));
+  }
+
+  function renderCategoryBar() {
+    const bar = document.getElementById('cat-filter-bar');
+    bar.innerHTML = `<button class="cat-chip active" onclick="setCat(this, '')">Tous</button>` +
+      categories.map(c => `<button class="cat-chip" onclick="setCat(this, '${c.name}')">${c.emoji} ${c.name}</button>`).join('');
+  }
+
+  function renderCategorySelect(selectedCat) {
+    const sel = document.getElementById('f-cat');
+    sel.innerHTML = categories.map(c =>
+      `<option value="${c.name}" ${c.name === selectedCat ? 'selected' : ''}>${c.emoji} ${c.name}</option>`
+    ).join('');
+  }
+
+  function openCatModal() {
+    renderCatManage();
+    document.getElementById('cat-modal').classList.add('open');
+  }
+
+  function closeCatModal(e) {
+    if (!e || e.target === document.getElementById('cat-modal'))
+      document.getElementById('cat-modal').classList.remove('open');
+  }
+
+  function renderCatManage() {
+    document.getElementById('cat-list-manage').innerHTML = categories.map((c, i) => `
+      <div class="cat-manage-row">
+        <span class="cat-manage-emoji">${c.emoji}</span>
+        <span class="cat-manage-name">${c.name}</span>
+        <button class="cat-manage-btn del" onclick="deleteCategory(${i})">Supprimer</button>
+      </div>`).join('') || '<div style="color:var(--text-3);font-size:13px;padding:8px 0;">Aucune catégorie</div>';
+  }
+
+  function addCategory() {
+    const emoji = document.getElementById('new-cat-emoji').value.trim() || '🏷️';
+    const name = document.getElementById('new-cat-name').value.trim();
+    if (!name) { toast('Entrez un nom de catégorie', 'error'); return; }
+    if (categories.find(c => c.name.toLowerCase() === name.toLowerCase())) { toast('Catégorie déjà existante', 'error'); return; }
+    categories.push({ name, emoji });
+    saveCategories();
+    document.getElementById('new-cat-emoji').value = '';
+    document.getElementById('new-cat-name').value = '';
+    renderCatManage();
+    renderCategoryBar();
+    toast('Catégorie ajoutée');
+  }
+
+  function deleteCategory(idx) {
+    const cat = categories[idx];
+    const inUse = products.some(p => (p.cat || '') === cat.name);
+    if (inUse) { toast('Catégorie utilisée par des produits', 'error'); return; }
+    categories.splice(idx, 1);
+    saveCategories();
+    renderCatManage();
+    renderCategoryBar();
+    toast('Catégorie supprimée');
+  }
 
   const DEFAULT_PRODUCTS = [
     { id: 1,  ref: 'F546',   name: 'SABOTS 36-41',   color: 'Noir, Bleu marine, Bleu ciel, Rose, Jaune, Gris, Blanc', price: 2.80, colis: 12, cat: 'Chaussures' },
@@ -783,7 +932,6 @@
     editingProductId = id;
     currentPhotoBase64 = null;
     document.getElementById('product-modal-title').textContent = id ? 'Modifier le produit' : 'Nouveau produit';
-    // Reset photo
     document.getElementById('f-photo-input').value = '';
     document.getElementById('f-photo-area').style.display = 'block';
     document.getElementById('f-photo-preview').style.display = 'none';
@@ -794,7 +942,7 @@
       document.getElementById('f-price').value = p.price;
       document.getElementById('f-colis').value = p.colis;
       document.getElementById('f-color').value = p.color;
-      document.getElementById('f-cat').value = p.cat || 'Chaussures';
+      renderCategorySelect(p.cat || categories[0]?.name || '');
       if (p.photo) {
         currentPhotoBase64 = p.photo;
         document.getElementById('f-photo-img').src = p.photo;
@@ -803,7 +951,7 @@
       }
     } else {
       ['f-ref','f-name','f-price','f-colis','f-color'].forEach(i => document.getElementById(i).value = '');
-      document.getElementById('f-cat').value = 'Chaussures';
+      renderCategorySelect(categories[0]?.name || '');
     }
     document.getElementById('product-modal').classList.add('open');
   }
@@ -1031,10 +1179,10 @@
     return `
       <div class="bon-header">
         <div class="bon-brand">
-          <div class="bon-logo">Y</div>
+          <div class="bon-logo">${settings.initial || 'Y'}</div>
           <div>
-            <div class="bon-title">YEEVA</div>
-            <div class="bon-subtitle">Prise de commande grossiste</div>
+            <div class="bon-title">${settings.company}</div>
+            <div class="bon-subtitle">${settings.subtitle}</div>
           </div>
         </div>
         <div class="bon-meta">
@@ -1473,7 +1621,9 @@
   }
 
   renderProducts(products);
+  renderCategoryBar();
   updateStockAlertBadge();
+  applySettings();
 
   // Désactiver et supprimer le service worker (cause des problèmes de cache)
   if ('serviceWorker' in navigator) {
