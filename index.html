@@ -236,8 +236,9 @@
       body > *:not(#print-zone) { display: none !important; }
       #print-zone {
         display: block !important;
-        position: fixed; inset: 0;
-        background: white; padding: 32px;
+        position: absolute; top: 0; left: 0;
+        width: 100%;
+        background: white; padding: 24px;
         font-family: 'DM Sans', sans-serif;
         color: #0f172a;
       }
