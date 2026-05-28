@@ -1154,19 +1154,48 @@
     const tvaRate = o.tvaRate || 0;
     const montantTVA = o.montantTVA ? parseFloat(o.montantTVA) : 0;
 
-    const rows = o.items.map(item => {
-      const totalPcs = item.qty * item.colis;
-      const lineTotal = item.price * totalPcs;
+    // Regrouper les items par référence + nom
+    const grouped = [];
+    o.items.forEach(item => {
+      const key = item.ref + '::' + item.name + '::' + item.price;
+      const existing = grouped.find(g => g.key === key);
+      if (existing) {
+        existing.colors.push({ color: item.color, qty: item.qty, colis: item.colis });
+        existing.totalPcs += item.qty * item.colis;
+        existing.lineTotal += item.price * item.qty * item.colis;
+      } else {
+        grouped.push({
+          key, ref: item.ref, name: item.name, price: item.price, colis: item.colis,
+          colors: [{ color: item.color, qty: item.qty, colis: item.colis }],
+          totalPcs: item.qty * item.colis,
+          lineTotal: item.price * item.qty * item.colis
+        });
+      }
+    });
+
+    const rows = grouped.map(g => {
+      const colorsHTML = g.colors.map((c, i) => {
+        const pcs = c.qty * c.colis;
+        return `<div style="${i > 0 ? 'margin-top:3px;' : ''}font-size:12px;color:#475569;">
+          <span style="display:inline-block;width:16px;"></span>
+          × ${c.qty} colis
+          <span style="color:#94a3b8;margin:0 4px;">·</span>
+          <span style="font-weight:600;">${c.color !== '-' ? c.color : 'Standard'}</span>
+          <span style="color:#94a3b8;"> (${pcs} pcs)</span>
+        </div>`;
+      }).join('');
+
       return `<tr>
         <td>
-          <div class="bon-td-ref">${item.ref}</div>
-          <div class="bon-td-name">${item.name}</div>
-          <div class="bon-td-sub">${item.color} · ${item.colis} pcs/colis</div>
+          <div class="bon-td-ref">${g.ref !== '-' ? g.ref : '—'}</div>
+          <div class="bon-td-name">${g.name}</div>
+          ${colorsHTML}
+          <div class="bon-td-sub" style="margin-top:3px;">${g.colis} pcs/colis · ${g.price.toFixed(2)} €/pièce</div>
         </td>
-        <td style="text-align:center;">${item.qty}</td>
-        <td style="text-align:center;">${totalPcs}</td>
-        <td style="text-align:right;font-family:'DM Mono',monospace;">${item.price.toFixed(2)} €</td>
-        <td>${lineTotal.toFixed(2)} €</td>
+        <td style="text-align:center;">${g.colors.reduce((s, c) => s + c.qty, 0)}</td>
+        <td style="text-align:center;">${g.totalPcs}</td>
+        <td style="text-align:right;font-family:'DM Mono',monospace;">${g.price.toFixed(2)} €</td>
+        <td>${g.lineTotal.toFixed(2)} €</td>
       </tr>`;
     }).join('');
 
@@ -1225,17 +1254,38 @@
   }
 
   function buildPreparationHTML(o, idx) {
-    const rows = o.items.map(item => {
-      const totalPcs = item.qty * item.colis;
+    // Regrouper par référence + nom
+    const grouped = [];
+    o.items.forEach(item => {
+      const key = item.ref + '::' + item.name;
+      const existing = grouped.find(g => g.key === key);
+      if (existing) {
+        existing.colors.push({ color: item.color, qty: item.qty, colis: item.colis });
+        existing.totalPcs += item.qty * item.colis;
+      } else {
+        grouped.push({
+          key, ref: item.ref, name: item.name, colis: item.colis,
+          colors: [{ color: item.color, qty: item.qty, colis: item.colis }],
+          totalPcs: item.qty * item.colis
+        });
+      }
+    });
+
+    const rows = grouped.map(g => {
+      const colorsHTML = g.colors.map(c =>
+        `<div style="font-size:12px;color:#475569;margin-top:2px;">
+          × ${c.qty} colis · <strong>${c.color !== '-' ? c.color : 'Standard'}</strong> (${c.qty * c.colis} pcs)
+        </div>`
+      ).join('');
       return `<tr>
         <td>
-          <div class="bon-td-ref">${item.ref !== '-' ? item.ref : '—'}</div>
-          <div class="bon-td-name">${item.name}</div>
-          <div class="bon-td-sub">${item.color !== '-' ? item.color : ''}</div>
+          <div class="bon-td-ref">${g.ref !== '-' ? g.ref : '—'}</div>
+          <div class="bon-td-name">${g.name}</div>
+          ${colorsHTML}
         </td>
-        <td style="text-align:center;font-weight:600;font-size:16px;">${item.qty}</td>
-        <td style="text-align:center;">${item.colis} pcs</td>
-        <td style="text-align:center;font-weight:700;font-size:16px;">${totalPcs}</td>
+        <td style="text-align:center;font-weight:600;font-size:16px;">${g.colors.reduce((s,c) => s+c.qty, 0)}</td>
+        <td style="text-align:center;">${g.colis} pcs</td>
+        <td style="text-align:center;font-weight:700;font-size:16px;">${g.totalPcs}</td>
         <td style="text-align:center;">
           <div style="width:20px;height:20px;border:2px solid #cbd5e1;border-radius:4px;display:inline-block;"></div>
         </td>
