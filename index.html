@@ -774,7 +774,7 @@
   let products = [...DEFAULT_PRODUCTS, ...savedCustomProducts];
   // Nettoyer l'ancien localStorage si besoin
   localStorage.removeItem('yeeva_products');
-  let cart = [];
+  let cart = JSON.parse(localStorage.getItem('yeeva_cart')) || [];
   let orders = JSON.parse(localStorage.getItem('yeeva_orders')) || [];
   let editingOrderIndex = null;
   let editingProductId = null;
@@ -782,11 +782,11 @@
   let previewOrderIndex = null;
 
   function saveData() {
-    // Sauvegarder uniquement les produits ajoutés manuellement (pas les défauts)
     const defaultIds = DEFAULT_PRODUCTS.map(p => p.id);
     const customProducts = products.filter(p => !defaultIds.includes(p.id));
     localStorage.setItem('yeeva_custom_products', JSON.stringify(customProducts));
     localStorage.setItem('yeeva_orders', JSON.stringify(orders));
+    localStorage.setItem('yeeva_cart', JSON.stringify(cart));
   }
 
   function toast(msg, type = 'success') {
@@ -1025,6 +1025,8 @@
   }
 
   function updateCart() {
+    // Sauvegarder le panier
+    localStorage.setItem('yeeva_cart', JSON.stringify(cart));
     // Bannières modification
     const isEditing = editingOrderIndex !== null;
     document.getElementById('editing-banner').style.display = isEditing ? 'flex' : 'none';
@@ -1123,11 +1125,10 @@
       const targetIdx = editingOrderIndex;
       Object.assign(orders[targetIdx], orderData);
       toast('Commande modifiée'); editingOrderIndex = null;
-      saveData(); cart = [];
+      saveData(); cart = []; localStorage.removeItem('yeeva_cart');
       document.getElementById('discount').value = 0;
       document.getElementById('tva-enabled').checked = false;
       updateCart(); showTab(3);
-      // Ouvrir et scroller sur la commande modifiée
       setTimeout(() => {
         const body = document.getElementById('order-body-' + targetIdx);
         const chevron = document.getElementById('chevron-' + targetIdx);
@@ -1141,7 +1142,7 @@
       orders.unshift(orderData);
       decreaseStockOnOrder(cart);
       toast('Commande validée — ' + finalTotal.toFixed(2).replace('.', ',') + ' €');
-      saveData(); cart = [];
+      saveData(); cart = []; localStorage.removeItem('yeeva_cart');
       document.getElementById('discount').value = 0;
       document.getElementById('tva-enabled').checked = false;
       updateCart(); showTab(3);
