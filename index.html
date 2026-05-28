@@ -1679,7 +1679,21 @@
   updateStockAlertBadge();
   applySettings();
 
-  // Désactiver et supprimer le service worker (cause des problèmes de cache)
+  // Confirmation avant fermeture de l'app (bouton retour Android)
+  let lastBackPress = 0;
+  window.addEventListener('popstate', (e) => {
+    history.pushState(null, '', window.location.href);
+  });
+  history.pushState(null, '', window.location.href);
+  window.addEventListener('popstate', () => {
+    const now = Date.now();
+    if (now - lastBackPress < 2000) {
+      window.close();
+    } else {
+      lastBackPress = now;
+      toast('Appuyez encore une fois pour quitter');
+    }
+  });
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.getRegistrations().then(regs => {
       regs.forEach(reg => reg.unregister());
