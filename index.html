@@ -919,14 +919,17 @@
     const colors = p.color ? p.color.split(',').map(c => c.trim()).filter(Boolean) : [];
     if (colors.length > 1 && !selectedColor) { toast('Choisissez une couleur', 'error'); return; }
     const color = selectedColor || p.color;
-    // Clé unique par produit + couleur
     const cartKey = p.id + '::' + color;
     const existing = cart.find(i => i.cartKey === cartKey);
     if (existing) existing.qty += n;
     else cart.push({ ...p, color, cartKey, qty: n });
-    document.getElementById('qty-modal').classList.remove('open');
     updateCart();
     toast(p.name + ' · ' + color + ' ajouté (' + n + ' colis)');
+
+    // Réinitialiser pour un nouvel ajout sans fermer la modal
+    document.getElementById('qty-input').value = 1;
+    selectedColor = null;
+    document.querySelectorAll('#qty-color-chips .color-chip').forEach(c => c.classList.remove('selected'));
   }
 
   function openProductModal(id) {
