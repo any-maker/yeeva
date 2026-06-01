@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>YEEVA Seller</title>
+  <title>Commande</title>
   <meta name="theme-color" content="#0f172a">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -618,7 +618,7 @@
     document.getElementById('header-title').textContent = settings.company;
     document.getElementById('header-sub').textContent = settings.subtitle;
     document.getElementById('header-logo').textContent = settings.initial || settings.company.charAt(0).toUpperCase();
-    document.title = settings.company;
+    // Ne pas changer document.title ici — il est géré par printOrder
   }
 
   function openSettingsModal() {
