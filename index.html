@@ -1258,53 +1258,53 @@
   }
 
   function buildPreparationHTML(o, idx) {
-    // Regrouper par référence + nom
     const grouped = [];
     o.items.forEach(item => {
       const key = item.ref + '::' + item.name;
       const existing = grouped.find(g => g.key === key);
       if (existing) {
-        existing.colors.push({ color: item.color, qty: item.qty, colis: item.colis });
-        existing.totalPcs += item.qty * item.colis;
+        existing.colors.push({ color: item.color, qty: item.qty });
+        existing.totalColis += item.qty;
       } else {
         grouped.push({
-          key, ref: item.ref, name: item.name, colis: item.colis,
-          colors: [{ color: item.color, qty: item.qty, colis: item.colis }],
-          totalPcs: item.qty * item.colis
+          key, ref: item.ref, name: item.name,
+          colors: [{ color: item.color, qty: item.qty }],
+          totalColis: item.qty
         });
       }
     });
 
+    const totalColis = grouped.reduce((s, g) => s + g.totalColis, 0);
+
     const rows = grouped.map(g => {
-      const colorsHTML = g.colors.map(c =>
-        `<div style="font-size:12px;color:#475569;margin-top:2px;">
-          × ${c.qty} colis · <strong>${c.color !== '-' ? c.color : 'Standard'}</strong> (${c.qty * c.colis} pcs)
-        </div>`
-      ).join('');
+      const firstColor = g.colors[0];
+      const extraColors = g.colors.slice(1);
       return `<tr>
-        <td>
-          <div class="bon-td-ref">${g.ref !== '-' ? g.ref : '—'}</div>
-          <div class="bon-td-name">${g.name}</div>
-          ${colorsHTML}
+        <td style="padding:10px 8px;vertical-align:top;border-bottom:1px solid #e2e8f0;">
+          <strong style="font-size:18px;text-transform:uppercase;color:#0f172a;">${g.ref !== '-' ? g.ref : g.name}</strong>
+          ${g.ref !== '-' ? `<div style="font-size:13px;font-weight:600;color:#475569;margin-top:2px;">${g.name}</div>` : ''}
         </td>
-        <td style="text-align:center;font-weight:600;font-size:16px;">${g.colors.reduce((s,c) => s+c.qty, 0)}</td>
-        <td style="text-align:center;">${g.colis} pcs</td>
-        <td style="text-align:center;font-weight:700;font-size:16px;">${g.totalPcs}</td>
-        <td style="text-align:center;">
-          <div style="width:20px;height:20px;border:2px solid #cbd5e1;border-radius:4px;display:inline-block;"></div>
+        <td style="padding:10px 8px;vertical-align:top;border-bottom:1px solid #e2e8f0;text-align:right;white-space:nowrap;">
+          <div style="display:flex;align-items:center;justify-content:flex-end;gap:10px;">
+            <span style="font-size:16px;font-weight:700;font-family:monospace;">${firstColor.qty} ${firstColor.color !== '-' ? firstColor.color.toUpperCase() : ''}</span>
+            <div style="width:20px;height:20px;border:2px solid #cbd5e1;border-radius:4px;flex-shrink:0;"></div>
+          </div>
+          ${extraColors.map(c => `
+          <div style="display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:6px;">
+            <span style="font-size:16px;font-weight:700;font-family:monospace;">${c.qty} ${c.color !== '-' ? c.color.toUpperCase() : ''}</span>
+            <div style="width:20px;height:20px;border:2px solid #cbd5e1;border-radius:4px;flex-shrink:0;"></div>
+          </div>`).join('')}
         </td>
+        <td style="display:none;"></td>
       </tr>`;
     }).join('');
-
-    const totalColis = o.items.reduce((s, i) => s + i.qty, 0);
-    const totalPieces = o.items.reduce((s, i) => s + i.qty * i.colis, 0);
 
     return `
       <div class="bon-header">
         <div class="bon-brand">
-          <div class="bon-logo">Y</div>
+          <div class="bon-logo">${settings.initial || 'Y'}</div>
           <div>
-            <div class="bon-title">YEEVA</div>
+            <div class="bon-title">${settings.company}</div>
             <div class="bon-subtitle">Bon de préparation</div>
           </div>
         </div>
@@ -1315,23 +1315,21 @@
         </div>
       </div>
       <hr class="bon-divider">
-      <table class="bon-table">
+      <table style="width:100%;border-collapse:collapse;">
         <thead>
           <tr>
-            <th style="width:45%">Produit</th>
-            <th style="text-align:center;">Colis</th>
-            <th style="text-align:center;">/ colis</th>
-            <th style="text-align:center;">Total pcs</th>
-            <th style="text-align:center;">✓</th>
+            <th style="text-align:left;padding:6px 8px;font-size:10px;text-transform:uppercase;color:#94a3b8;border-bottom:2px solid #0f172a;">Référence</th>
+            <th style="text-align:right;padding:6px 8px;font-size:10px;text-transform:uppercase;color:#94a3b8;border-bottom:2px solid #0f172a;">Qté · Couleur · ✓</th>
+            <th style="display:none;"></th>
           </tr>
         </thead>
         <tbody>${rows}</tbody>
       </table>
-      <div class="bon-totals">
-        <div class="bon-total-row"><span>Total colis</span><span style="font-weight:700;">${totalColis}</span></div>
-        <div class="bon-total-row final"><span>Total pièces</span><span>${totalPieces}</span></div>
+      <div style="margin-top:20px;border-top:2px solid #0f172a;padding-top:14px;display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:16px;font-weight:700;">TOTAL</span>
+        <span style="font-size:22px;font-weight:700;font-family:monospace;">${totalColis} colis</span>
       </div>
-      <div class="bon-footer-note">Bon de préparation YEEVA · ${new Date().toLocaleDateString('fr-FR')}</div>`;
+      <div class="bon-footer-note">Bon de préparation ${settings.company} · ${new Date().toLocaleDateString('fr-FR')}</div>`;
   }
 
   function printOrder() {
