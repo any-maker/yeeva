@@ -1361,8 +1361,10 @@
     const prevTitle = document.title;
     document.title = `Commande-${num}`;
     document.getElementById('print-zone').innerHTML = buildBonHTML(orders[previewOrderIndex], previewOrderIndex);
-    window.print();
-    setTimeout(() => document.title = prevTitle, 1000);
+    setTimeout(() => {
+      window.print();
+      setTimeout(() => document.title = prevTitle, 2000);
+    }, 200);
   }
 
   function printPreparation() {
@@ -1370,8 +1372,10 @@
     const prevTitle = document.title;
     document.title = `Preparation-${num}`;
     document.getElementById('print-zone').innerHTML = buildPreparationHTML(orders[previewOrderIndex], previewOrderIndex);
-    window.print();
-    setTimeout(() => document.title = prevTitle, 1000);
+    setTimeout(() => {
+      window.print();
+      setTimeout(() => document.title = prevTitle, 2000);
+    }, 200);
   }
 
   function exportOrderPDF() {
