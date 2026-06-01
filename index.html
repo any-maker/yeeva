@@ -1358,24 +1358,16 @@
 
   function printOrder() {
     const num = getOrderNum(previewOrderIndex);
-    const prevTitle = document.title;
     document.title = `Commande-${num}`;
     document.getElementById('print-zone').innerHTML = buildBonHTML(orders[previewOrderIndex], previewOrderIndex);
-    setTimeout(() => {
-      window.print();
-      setTimeout(() => document.title = prevTitle, 2000);
-    }, 200);
+    window.print();
   }
 
   function printPreparation() {
     const num = getOrderNum(previewOrderIndex);
-    const prevTitle = document.title;
     document.title = `Preparation-${num}`;
     document.getElementById('print-zone').innerHTML = buildPreparationHTML(orders[previewOrderIndex], previewOrderIndex);
-    setTimeout(() => {
-      window.print();
-      setTimeout(() => document.title = prevTitle, 2000);
-    }, 200);
+    window.print();
   }
 
   function exportOrderPDF() {
