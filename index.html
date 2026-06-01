@@ -14,6 +14,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@500&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -234,12 +235,13 @@
     #print-zone { display: none; }
     @media print {
       * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      html, body { background: white !important; }
       body > *:not(#print-zone) { display: none !important; }
       #print-zone {
         display: block !important;
         position: absolute; top: 0; left: 0;
         width: 100%;
-        background: white; padding: 24px;
+        background: white !important; padding: 24px;
         font-family: 'DM Sans', sans-serif;
         color: #0f172a;
       }
@@ -1371,217 +1373,80 @@
     window.print();
   }
 
-  function exportOrderPDF() {
-    const idx = previewOrderIndex;
-    const o = orders[idx];
+  async function generatePDFFromBon(idx) {
     const num = getOrderNum(idx);
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
-
-    const margin = 15;
-    let y = margin;
-    const pageW = 210;
-    const contentW = pageW - margin * 2;
-
-    // Couleurs
-    const navy = [15, 23, 42];
-    const accent = [59, 130, 246];
-    const gray = [148, 163, 184];
-    const dark = [71, 85, 105];
-
-    // Logo circle
-    doc.setFillColor(...accent);
-    doc.circle(margin + 6, y + 5, 6, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(12); doc.setFont('helvetica', 'bold');
-    doc.text(settings.initial || 'Y', margin + 6, y + 6.5, { align: 'center' });
-
-    // Nom entreprise
-    doc.setTextColor(...navy);
-    doc.setFontSize(16); doc.setFont('helvetica', 'bold');
-    doc.text(settings.company, margin + 16, y + 4);
-    doc.setFontSize(9); doc.setFont('helvetica', 'normal');
-    doc.setTextColor(...gray);
-    doc.text(settings.subtitle, margin + 16, y + 9);
-
-    // Numéro & date (droite)
-    doc.setFontSize(12); doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...accent);
-    doc.text(`BON #${num}`, pageW - margin, y + 4, { align: 'right' });
-    doc.setFontSize(9); doc.setFont('helvetica', 'normal');
-    doc.setTextColor(...gray);
-    doc.text(o.date, pageW - margin, y + 9, { align: 'right' });
-
-    y += 18;
-    // Ligne séparatrice
-    doc.setDrawColor(...navy); doc.setLineWidth(0.5);
-    doc.line(margin, y, pageW - margin, y);
-    y += 6;
-
-    // En-têtes tableau
-    doc.setFillColor(241, 245, 249);
-    doc.rect(margin, y, contentW, 7, 'F');
-    doc.setFontSize(8); doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...gray);
-    doc.text('PRODUIT', margin + 2, y + 5);
-    doc.text('COLIS', margin + 90, y + 5, { align: 'center' });
-    doc.text('PCS', margin + 115, y + 5, { align: 'center' });
-    doc.text('P.U.', margin + 140, y + 5, { align: 'center' });
-    doc.text('TOTAL', pageW - margin - 2, y + 5, { align: 'right' });
-    y += 9;
-
-    // Regrouper par ref
-    const grouped = [];
-    o.items.forEach(item => {
-      const key = item.ref + '::' + item.name + '::' + item.price;
-      const ex = grouped.find(g => g.key === key);
-      if (ex) { ex.colors.push({ color: item.color, qty: item.qty, colis: item.colis }); ex.totalPcs += item.qty * item.colis; ex.lineTotal += item.price * item.qty * item.colis; }
-      else grouped.push({ key, ref: item.ref, name: item.name, price: item.price, colis: item.colis, colors: [{ color: item.color, qty: item.qty, colis: item.colis }], totalPcs: item.qty * item.colis, lineTotal: item.price * item.qty * item.colis });
-    });
-
-    grouped.forEach((g, i) => {
-      if (i % 2 === 0) { doc.setFillColor(248, 250, 252); doc.rect(margin, y - 1, contentW, 12, 'F'); }
-      doc.setFontSize(8); doc.setFont('helvetica', 'bold');
-      doc.setTextColor(...accent);
-      doc.text(g.ref !== '-' ? g.ref : '—', margin + 2, y + 3);
-      doc.setTextColor(...navy);
-      doc.text(g.name, margin + 2, y + 8);
-      // Couleurs
-      const colorsText = g.colors.map(c => `${c.qty} × ${c.color !== '-' ? c.color : 'Standard'}`).join(' | ');
-      doc.setFontSize(7); doc.setFont('helvetica', 'normal'); doc.setTextColor(...gray);
-      doc.text(colorsText, margin + 2, y + 12);
-      // Valeurs
-      doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.setTextColor(...dark);
-      doc.text(String(g.colors.reduce((s,c) => s+c.qty, 0)), margin + 90, y + 6, { align: 'center' });
-      doc.text(String(g.totalPcs), margin + 115, y + 6, { align: 'center' });
-      doc.text(`${g.price.toFixed(2)} €`, margin + 140, y + 6, { align: 'center' });
-      doc.setTextColor(...navy);
-      doc.text(`${g.lineTotal.toFixed(2)} €`, pageW - margin - 2, y + 6, { align: 'right' });
-      y += 14;
-    });
-
-    // Ligne séparatrice totaux
-    doc.setDrawColor(...navy); doc.line(margin, y, pageW - margin, y); y += 5;
-
-    // Totaux
-    const subtotal = o.items.reduce((s, i) => s + i.price * i.qty * i.colis, 0);
-    const discount = o.discount || 0;
-    const totalHT = parseFloat(o.totalHT) || subtotal * (1 - discount / 100);
-    const montantTVA = parseFloat(o.montantTVA) || 0;
-    const transport = parseFloat(o.transport) || 0;
-    const total = parseFloat(o.total);
-
-    const addTotalRow = (label, value, bold = false) => {
-      doc.setFontSize(bold ? 11 : 9);
-      doc.setFont('helvetica', bold ? 'bold' : 'normal');
-      if (bold) doc.setTextColor(...navy); else doc.setTextColor(...dark);
-      doc.text(label, pageW - margin - 60, y);
-      doc.text(value, pageW - margin - 2, y, { align: 'right' });
-      y += 6;
-    };
-
-    if (discount > 0) addTotalRow(`Remise (${discount}%)`, `-${(subtotal - totalHT).toFixed(2)} €`);
-    if (o.tvaEnabled && o.tvaRate > 0) {
-      addTotalRow('Total HT', `${totalHT.toFixed(2)} €`);
-      addTotalRow(`TVA ${o.tvaRate}%`, `+${montantTVA.toFixed(2)} €`);
+    const bonHTML = buildBonHTML(orders[idx], idx);
+    const container = document.createElement('div');
+    container.style.cssText = 'position:fixed;top:-9999px;left:0;width:800px;padding:32px;background:white;font-family:sans-serif;color:#0f172a;';
+    container.innerHTML = `<style>
+      .bon-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;}
+      .bon-brand{display:flex;align-items:center;gap:10px;}
+      .bon-logo{width:44px;height:44px;background:#3b82f6;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:22px;color:white;}
+      .bon-title{font-size:22px;font-weight:700;color:#0f172a;}
+      .bon-subtitle{font-size:12px;color:#94a3b8;margin-top:2px;}
+      .bon-meta{text-align:right;}
+      .bon-num{font-size:15px;font-weight:700;color:#3b82f6;font-family:monospace;}
+      .bon-date{font-size:12px;color:#94a3b8;margin-top:4px;}
+      .bon-divider{border:none;border-top:2px solid #0f172a;margin:0 0 20px;}
+      .bon-table{width:100%;border-collapse:collapse;font-size:13px;}
+      .bon-table th{text-align:left;padding:8px 6px;font-size:10px;text-transform:uppercase;color:#94a3b8;border-bottom:1px solid #e2e8f0;}
+      .bon-table th:last-child{text-align:right;}
+      .bon-table td{padding:10px 6px;border-bottom:1px solid #e2e8f0;vertical-align:top;}
+      .bon-table td:last-child{text-align:right;font-family:monospace;font-weight:600;}
+      .bon-td-ref{font-size:10px;color:#3b82f6;font-weight:600;text-transform:uppercase;}
+      .bon-td-name{font-weight:600;}
+      .bon-td-sub{font-size:11px;color:#94a3b8;}
+      .bon-totals{margin-top:20px;border-top:2px solid #0f172a;padding-top:14px;}
+      .bon-total-row{display:flex;justify-content:space-between;font-size:13px;color:#475569;margin-bottom:6px;}
+      .bon-total-row.final{font-size:18px;font-weight:700;color:#0f172a;margin-top:8px;border-top:1px solid #e2e8f0;padding-top:10px;}
+      .bon-footer-note{margin-top:28px;font-size:11px;color:#94a3b8;text-align:center;}
+    </style>${bonHTML}`;
+    document.body.appendChild(container);
+    try {
+      const canvas = await html2canvas(container, { scale: 2, backgroundColor: '#ffffff', useCORS: true });
+      const imgData = canvas.toDataURL('image/png');
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF({ unit: 'mm', format: 'a4' });
+      const pageW = 210, pageH = 297, margin = 10;
+      const imgW = pageW - margin * 2;
+      const imgH = (canvas.height * imgW) / canvas.width;
+      let posY = margin, heightLeft = imgH;
+      pdf.addImage(imgData, 'PNG', margin, posY, imgW, imgH);
+      heightLeft -= (pageH - margin * 2);
+      while (heightLeft > 0) {
+        posY = heightLeft - imgH + margin;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', margin, posY, imgW, imgH);
+        heightLeft -= (pageH - margin * 2);
+      }
+      return { pdf, num };
+    } finally {
+      document.body.removeChild(container);
     }
-    if (transport > 0) addTotalRow('Transport', `+${transport.toFixed(2)} €`);
-    doc.setDrawColor(...accent); doc.line(pageW - margin - 60, y, pageW - margin, y); y += 4;
-    addTotalRow('TOTAL', `${total.toFixed(2).replace('.', ',')} €`, true);
-
-    // Footer
-    doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(...gray);
-    doc.text(`Généré par ${settings.company} · ${new Date().toLocaleDateString('fr-FR')}`, pageW / 2, 285, { align: 'center' });
-
-    doc.save(`Commande-${num}.pdf`);
   }
 
-  function shareOrderText() {
-    const idx = previewOrderIndex;
-    const num = getOrderNum(idx);
-    const o = orders[idx];
+  async function exportOrderPDF() {
+    toast('Génération du PDF…', 'success');
+    try {
+      const { pdf, num } = await generatePDFFromBon(previewOrderIndex);
+      pdf.save(`Commande-${num}.pdf`);
+    } catch(e) { toast('Erreur PDF', 'error'); }
+  }
 
-    // Générer le PDF avec jsPDF puis le partager
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
-
-    const margin = 15;
-    let y = margin;
-    const pageW = 210;
-    const contentW = pageW - margin * 2;
-    const navy = [15, 23, 42], accent = [59, 130, 246], gray = [148, 163, 184], dark = [71, 85, 105];
-
-    doc.setFillColor(...accent);
-    doc.circle(margin + 6, y + 5, 6, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(12); doc.setFont('helvetica', 'bold');
-    doc.text(settings.initial || 'Y', margin + 6, y + 6.5, { align: 'center' });
-    doc.setTextColor(...navy);
-    doc.setFontSize(16); doc.setFont('helvetica', 'bold');
-    doc.text(settings.company, margin + 16, y + 4);
-    doc.setFontSize(9); doc.setFont('helvetica', 'normal');
-    doc.setTextColor(...gray);
-    doc.text(settings.subtitle, margin + 16, y + 9);
-    doc.setFontSize(12); doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...accent);
-    doc.text(`BON #${num}`, pageW - margin, y + 4, { align: 'right' });
-    doc.setFontSize(9); doc.setFont('helvetica', 'normal');
-    doc.setTextColor(...gray);
-    doc.text(o.date, pageW - margin, y + 9, { align: 'right' });
-    y += 18;
-    doc.setDrawColor(...navy); doc.setLineWidth(0.5);
-    doc.line(margin, y, pageW - margin, y); y += 6;
-    doc.setFillColor(241, 245, 249);
-    doc.rect(margin, y, contentW, 7, 'F');
-    doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(...gray);
-    doc.text('PRODUIT', margin + 2, y + 5);
-    doc.text('COLIS', margin + 90, y + 5, { align: 'center' });
-    doc.text('P.U.', margin + 140, y + 5, { align: 'center' });
-    doc.text('TOTAL', pageW - margin - 2, y + 5, { align: 'right' });
-    y += 9;
-
-    const grouped = [];
-    o.items.forEach(item => {
-      const key = item.ref + '::' + item.name + '::' + item.price;
-      const ex = grouped.find(g => g.key === key);
-      if (ex) { ex.colors.push({ color: item.color, qty: item.qty }); ex.lineTotal += item.price * item.qty * item.colis; }
-      else grouped.push({ key, ref: item.ref, name: item.name, price: item.price, colis: item.colis, colors: [{ color: item.color, qty: item.qty }], lineTotal: item.price * item.qty * item.colis });
-    });
-
-    grouped.forEach((g, i) => {
-      if (i % 2 === 0) { doc.setFillColor(248, 250, 252); doc.rect(margin, y - 1, contentW, 12, 'F'); }
-      doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(...accent);
-      doc.text(g.ref !== '-' ? g.ref : '—', margin + 2, y + 3);
-      doc.setTextColor(...navy); doc.text(g.name, margin + 2, y + 8);
-      doc.setFontSize(7); doc.setFont('helvetica', 'normal'); doc.setTextColor(...gray);
-      doc.text(g.colors.map(c => `${c.qty} × ${c.color !== '-' ? c.color : 'Std'}`).join(' | '), margin + 2, y + 12);
-      doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.setTextColor(...dark);
-      doc.text(String(g.colors.reduce((s,c) => s+c.qty, 0)), margin + 90, y + 6, { align: 'center' });
-      doc.text(`${g.price.toFixed(2)} €`, margin + 140, y + 6, { align: 'center' });
-      doc.setTextColor(...navy);
-      doc.text(`${g.lineTotal.toFixed(2)} €`, pageW - margin - 2, y + 6, { align: 'right' });
-      y += 14;
-    });
-
-    doc.setDrawColor(...navy); doc.line(margin, y, pageW - margin, y); y += 5;
-    const total = parseFloat(o.total);
-    doc.setFontSize(11); doc.setFont('helvetica', 'bold'); doc.setTextColor(...navy);
-    doc.text('TOTAL', pageW - margin - 60, y);
-    doc.text(`${total.toFixed(2).replace('.', ',')} €`, pageW - margin - 2, y, { align: 'right' });
-    doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(...gray);
-    doc.text(`Généré par ${settings.company} · ${new Date().toLocaleDateString('fr-FR')}`, pageW / 2, 285, { align: 'center' });
-
-    // Partager le PDF
-    const pdfBlob = doc.output('blob');
-    const filename = `Commande-${num}.pdf`;
-    if (navigator.share && navigator.canShare && navigator.canShare({ files: [new File([pdfBlob], filename, { type: 'application/pdf' })] })) {
+  async function shareOrderText() {
+    toast('Préparation du PDF…', 'success');
+    try {
+      const { pdf, num } = await generatePDFFromBon(previewOrderIndex);
+      const filename = `Commande-${num}.pdf`;
+      const pdfBlob = pdf.output('blob');
       const file = new File([pdfBlob], filename, { type: 'application/pdf' });
-      navigator.share({ files: [file], title: filename });
-    } else {
-      // Fallback : télécharger le PDF
-      doc.save(filename);
-      toast('PDF téléchargé');
-    }
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], title: filename });
+      } else {
+        pdf.save(filename);
+        toast('PDF téléchargé');
+      }
+    } catch(e) { toast('Erreur partage', 'error'); }
   }
 
   function exportOrderJSON() {
