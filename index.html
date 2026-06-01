@@ -153,7 +153,7 @@
     .qty-modal-input { width: 100%; padding: 16px; border: 2px solid var(--border); border-radius: var(--radius-sm); font-size: 28px; font-family: 'DM Mono', monospace; font-weight: 500; text-align: center; outline: none; transition: border-color 0.15s; background: var(--surface-3); }
     .qty-modal-input:focus { border-color: var(--accent); background: var(--surface); }
     .qty-modal-info { font-size: 13px; color: var(--text-3); text-align: center; margin-top: 8px; }
-    .cart-content-spacer { height: 140px; }
+    .cart-content-spacer { height: 320px; }
 
     /* Preview modal */
     .preview-modal { background: var(--surface); border-radius: 20px 20px 0 0; width: 100%; transform: translateY(100%); transition: transform 0.3s cubic-bezier(.32,.72,0,1); max-height: 94vh; overflow-y: auto; display: flex; flex-direction: column; }
@@ -325,6 +325,12 @@
       Catégories
     </button>
   </div>
+  <div class="search-wrap">
+    <div class="search-inner">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" id="product-search" placeholder="Référence, nom…" oninput="renderProductListManage()">
+    </div>
+  </div>
   <div class="section-header"><span class="section-title" id="product-list-count">Produits</span></div>
   <div id="product-list-manage" class="product-grid"></div>
 </div>
@@ -336,30 +342,35 @@
     Modification en cours
     <button class="editing-cancel" onclick="cancelEdit()">Annuler</button>
   </div>
-  <div style="padding:16px 16px 0;">
-    <div class="discount-row">
-      <span class="discount-badge">Remise</span>
-      <input type="number" id="discount" value="0" min="0" max="100" step="0.1" oninput="updateCart()">
-      <span style="font-size:13px;color:var(--text-2);">%</span>
-    </div>
-    <div class="tva-row">
-      <span class="tva-badge">TVA France</span>
-      <label class="tva-switch">
-        <input type="checkbox" id="tva-enabled" onchange="updateCart()">
-        <span class="tva-slider"></span>
-      </label>
-      <select class="tva-select" id="tva-rate" onchange="updateCart()">
-        <option value="20">20% — Taux normal</option>
-        <option value="10">10% — Taux intermédiaire</option>
-        <option value="5.5">5,5% — Taux réduit</option>
-        <option value="2.1">2,1% — Taux super réduit</option>
-        <option value="0">0% — Exonéré</option>
-      </select>
-    </div>
-  </div>
   <div id="cart-items"></div>
   <div class="cart-content-spacer"></div>
   <div class="cart-footer">
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+      <div class="discount-row" style="margin:0;flex:1;min-width:120px;">
+        <span class="discount-badge">Remise</span>
+        <input type="number" id="discount" value="0" min="0" max="100" step="0.1" oninput="updateCart()">
+        <span style="font-size:13px;color:var(--text-2);">%</span>
+      </div>
+      <div class="discount-row" style="margin:0;flex:1;min-width:120px;">
+        <span class="discount-badge" style="background:#e0f2fe;color:#0369a1;">Transport</span>
+        <input type="number" id="transport" value="0" min="0" step="0.5" oninput="updateCart()">
+        <span style="font-size:13px;color:var(--text-2);">€</span>
+      </div>
+      <div class="tva-row" style="margin:0;width:100%;">
+        <span class="tva-badge">TVA France</span>
+        <label class="tva-switch">
+          <input type="checkbox" id="tva-enabled" onchange="updateCart()">
+          <span class="tva-slider"></span>
+        </label>
+        <select class="tva-select" id="tva-rate" onchange="updateCart()">
+          <option value="20">20% — Normal</option>
+          <option value="10">10% — Intermédiaire</option>
+          <option value="5.5">5,5% — Réduit</option>
+          <option value="2.1">2,1% — Super réduit</option>
+          <option value="0">0% — Exonéré</option>
+        </select>
+      </div>
+    </div>
     <div id="cart-totals-detail"></div>
     <div class="cart-total-row">
       <span class="cart-total-label" id="total-label">Total TTC</span>
@@ -985,16 +996,21 @@
   function renderProductListManage() {
     const container = document.getElementById('product-list-manage');
     const count = document.getElementById('product-list-count');
-    count.textContent = products.length + ' produit' + (products.length !== 1 ? 's' : '');
-    if (!products.length) {
-      container.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg><p>Aucun produit.<br>Ajoutez-en un !</p></div>';
+    const q = (document.getElementById('product-search')?.value || '').toLowerCase();
+    const filtered = q ? products.filter(p =>
+      p.ref.toLowerCase().includes(q) || p.name.toLowerCase().includes(q) || (p.color || '').toLowerCase().includes(q)
+    ) : products;
+    count.textContent = filtered.length + ' produit' + (filtered.length !== 1 ? 's' : '');
+    if (!filtered.length) {
+      container.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg><p>Aucun produit trouvé</p></div>';
       return;
     }
-    container.innerHTML = products.map(p => `
+    container.innerHTML = filtered.map(p => `
       <div class="product-card">
-        <div class="prod-ref">${p.ref}</div>
+        ${p.photo ? `<img class="prod-photo" src="${p.photo}" alt="${p.name}">` : ''}
+        <div class="prod-ref">${p.ref !== '-' ? p.ref : ''}</div>
         <div class="prod-name">${p.name}</div>
-        <div class="prod-color">${p.color}</div>
+        <div class="prod-color">${p.color !== '-' ? p.color : ''}</div>
         <div class="prod-price">${p.price.toFixed(2)} €</div>
         <div class="prod-colis">${p.colis} pcs / colis</div>
         <div style="display:flex;gap:6px;margin-top:8px;">
@@ -1019,6 +1035,7 @@
     cart = [];
     document.getElementById('discount').value = 0;
     document.getElementById('tva-enabled').checked = false;
+    document.getElementById('transport').value = 0;
     updateCart();
     showTab(3);
     toast('Modification annulée');
@@ -1077,23 +1094,21 @@
     const discount = parseFloat(document.getElementById('discount').value) || 0;
     const tvaEnabled = document.getElementById('tva-enabled').checked;
     const tvaRate = parseFloat(document.getElementById('tva-rate').value) || 0;
+    const transport = parseFloat(document.getElementById('transport').value) || 0;
     const totalHT = subtotal * (1 - discount / 100);
     const montantTVA = tvaEnabled ? totalHT * (tvaRate / 100) : 0;
-    const totalTTC = totalHT + montantTVA;
+    const totalTTC = totalHT + montantTVA + transport;
 
-    // Détail des totaux
     const detailEl = document.getElementById('cart-totals-detail');
+    let detailHTML = '';
+    if (discount > 0) detailHTML += `<div class="cart-subtotal-row"><span class="cart-subtotal-label">Sous-total</span><span class="cart-subtotal-val">${subtotal.toFixed(2).replace('.',',')} €</span></div>`;
     if (tvaEnabled && tvaRate > 0) {
-      detailEl.innerHTML = `
-        <div class="cart-subtotal-row"><span class="cart-subtotal-label">Total HT${discount > 0 ? ' (après remise)' : ''}</span><span class="cart-subtotal-val">${totalHT.toFixed(2).replace('.',',')} €</span></div>
-        <div class="cart-subtotal-row"><span class="cart-subtotal-label">TVA ${tvaRate}%</span><span class="cart-subtotal-val">+${montantTVA.toFixed(2).replace('.',',')} €</span></div>`;
-      document.getElementById('total-label').textContent = 'Total TTC';
-    } else {
-      detailEl.innerHTML = discount > 0
-        ? `<div class="cart-subtotal-row"><span class="cart-subtotal-label">Sous-total</span><span class="cart-subtotal-val">${subtotal.toFixed(2).replace('.',',')} €</span></div>`
-        : '';
-      document.getElementById('total-label').textContent = tvaEnabled ? 'Total HT (TVA 0%)' : 'Total commande';
+      detailHTML += `<div class="cart-subtotal-row"><span class="cart-subtotal-label">Total HT${discount > 0 ? ' (après remise)' : ''}</span><span class="cart-subtotal-val">${totalHT.toFixed(2).replace('.',',')} €</span></div>`;
+      detailHTML += `<div class="cart-subtotal-row"><span class="cart-subtotal-label">TVA ${tvaRate}%</span><span class="cart-subtotal-val">+${montantTVA.toFixed(2).replace('.',',')} €</span></div>`;
     }
+    if (transport > 0) detailHTML += `<div class="cart-subtotal-row"><span class="cart-subtotal-label">🚚 Transport</span><span class="cart-subtotal-val">+${transport.toFixed(2).replace('.',',')} €</span></div>`;
+    detailEl.innerHTML = detailHTML;
+    document.getElementById('total-label').textContent = tvaEnabled ? 'Total TTC' : 'Total commande';
     document.getElementById('total').textContent = totalTTC.toFixed(2).replace('.', ',') + ' €';
   }
 
@@ -1107,9 +1122,10 @@
     const discount = parseFloat(document.getElementById('discount').value) || 0;
     const tvaEnabled = document.getElementById('tva-enabled').checked;
     const tvaRate = parseFloat(document.getElementById('tva-rate').value) || 0;
+    const transport = parseFloat(document.getElementById('transport').value) || 0;
     const totalHT = subtotal * (1 - discount / 100);
     const montantTVA = tvaEnabled ? totalHT * (tvaRate / 100) : 0;
-    const finalTotal = totalHT + montantTVA;
+    const finalTotal = totalHT + montantTVA + transport;
     const orderData = {
       id: Date.now(),
       date: new Date().toLocaleDateString('fr-FR'),
@@ -1119,6 +1135,7 @@
       tvaEnabled,
       tvaRate: tvaEnabled ? tvaRate : 0,
       montantTVA: montantTVA.toFixed(2),
+      transport,
       items: [...cart]
     };
     if (editingOrderIndex !== null) {
@@ -1128,6 +1145,7 @@
       saveData(); cart = []; localStorage.removeItem('yeeva_cart');
       document.getElementById('discount').value = 0;
       document.getElementById('tva-enabled').checked = false;
+      document.getElementById('transport').value = 0;
       updateCart(); showTab(3);
       setTimeout(() => {
         const body = document.getElementById('order-body-' + targetIdx);
@@ -1145,8 +1163,13 @@
       saveData(); cart = []; localStorage.removeItem('yeeva_cart');
       document.getElementById('discount').value = 0;
       document.getElementById('tva-enabled').checked = false;
+      document.getElementById('transport').value = 0;
       updateCart(); showTab(3);
     }
+  }
+
+  function getOrderNum(idx) {
+    return String(orders.length - idx).padStart(3, '0');
   }
 
   function buildBonHTML(o, idx) {
@@ -1220,7 +1243,7 @@
           </div>
         </div>
         <div class="bon-meta">
-          <div class="bon-num">BON #${String(idx+1).padStart(3,'0')}</div>
+          <div class="bon-num">BON #${getOrderNum(idx)}</div>
           <div class="bon-date">${o.date}</div>
           ${tvaInfoBadge}
         </div>
@@ -1242,6 +1265,7 @@
         <div class="bon-total-row"><span>Sous-total</span><span>${subtotal.toFixed(2)} €</span></div>
         ${discountRow}
         ${tvaRows}
+        ${o.transport > 0 ? `<div class="bon-total-row"><span>🚚 Transport</span><span>+${parseFloat(o.transport).toFixed(2)} €</span></div>` : ''}
         <div class="bon-total-row final"><span>${totalLabel}</span><span>${total.toFixed(2).replace('.',',')} €</span></div>
       </div>
       <div class="bon-footer-note">Bon généré par YEEVA Seller · ${new Date().toLocaleDateString('fr-FR')}</div>`;
@@ -1309,7 +1333,7 @@
           </div>
         </div>
         <div class="bon-meta">
-          <div class="bon-num">BON #${String(idx+1).padStart(3,'0')}</div>
+          <div class="bon-num">BON #${getOrderNum(idx)}</div>
           <div class="bon-date">${o.date}</div>
           <div style="font-size:11px;background:#dcfce7;color:#15803d;padding:2px 8px;border-radius:20px;font-weight:600;margin-top:4px;display:inline-block;">PRÉPARATION</div>
         </div>
@@ -1348,8 +1372,8 @@
     const total = parseFloat(o.total);
     const lines = o.items.map(i => `• ${i.ref} – ${i.name} (${i.color}) : ${i.qty} colis × ${i.colis} pcs = ${(i.price * i.qty * i.colis).toFixed(2)} €`).join('\n');
     const discount = o.discount > 0 ? `\nRemise ${o.discount}% appliquée` : '';
-    const text = `🧾 BON DE COMMANDE YEEVA #${String(idx+1).padStart(3,'0')}\nDate : ${o.date}\n\n${lines}${discount}\n\n💶 TOTAL : ${total.toFixed(2).replace('.',',')} €`;
-    const title = `Commande YEEVA #${String(idx+1).padStart(3,'0')}`;
+    const text = `🧾 BON DE COMMANDE YEEVA #${getOrderNum(idx)}\nDate : ${o.date}\n\n${lines}${discount}\n\n💶 TOTAL : ${total.toFixed(2).replace('.',',')} €`;
+    const title = `Commande YEEVA #${getOrderNum(idx)}`;
     if (window.AndroidBridge) {
       window.AndroidBridge.shareText(title, text);
     } else if (navigator.share) {
@@ -1362,8 +1386,8 @@
   function exportOrderJSON() {
     const o = orders[previewOrderIndex];
     const idx = previewOrderIndex;
-    const filename = `yeeva-commande-${String(idx+1).padStart(3,'0')}-${o.date.replace(/\//g,'-')}.json`;
-    const content = JSON.stringify({ commande: `#${String(idx+1).padStart(3,'0')}`, ...o }, null, 2);
+    const filename = `commande-${getOrderNum(idx)}-${o.date.replace(/\//g,'-')}.json`;
+    const content = JSON.stringify({ commande: `#${getOrderNum(idx)}`, ...o }, null, 2);
     if (window.AndroidBridge) {
       window.AndroidBridge.downloadJSON(filename, content);
     } else {
@@ -1433,11 +1457,13 @@
       container.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24"><path d="M12 20V10M18 20V4M6 20v-6"/></svg><p>Aucune commande enregistrée.</p></div>';
       return;
     }
-    container.innerHTML = orders.map((o, idx) => `
+    container.innerHTML = orders.map((o, idx) => {
+      const orderNum = String(orders.length - idx).padStart(3, '0');
+      return `
       <div class="order-card">
         <div class="order-card-header" onclick="toggleOrder(${idx})">
           <div>
-            <div class="order-num">#${String(idx+1).padStart(3,'0')}</div>
+            <div class="order-num">#${orderNum}</div>
             <div class="order-date">${o.date}</div>
             ${o.discount > 0 ? '<div class="order-discount-pill">Remise ' + o.discount + '%</div>' : ''}
             ${o.tvaEnabled && o.tvaRate > 0 ? '<div class="order-discount-pill" style="background:#ede9fe;color:#5b21b6;">TVA ' + o.tvaRate + '%</div>' : ''}
@@ -1481,7 +1507,8 @@
             </button>
           </div>
         </div>
-      </div>`).join('');
+      </div>`;
+    }).join('');
   }
 
   function toggleOrder(idx) {
@@ -1500,6 +1527,7 @@
     const tvaRate = orders[idx].tvaRate || 20;
     document.getElementById('tva-enabled').checked = tvaEnabled;
     document.getElementById('tva-rate').value = tvaRate;
+    document.getElementById('transport').value = orders[idx].transport || 0;
     updateCart();
     showTab(2); // Ouvre le panier pour modifier quantités/prix
     toast('✏️ Modifiez les quantités et prix, puis validez');
@@ -1516,6 +1544,7 @@
     const tvaRate = orders[idx].tvaRate || 20;
     document.getElementById('tva-enabled').checked = tvaEnabled;
     document.getElementById('tva-rate').value = tvaRate;
+    document.getElementById('transport').value = orders[idx].transport || 0;
     activeCat = '';
     document.querySelectorAll('.cat-chip').forEach(c => c.classList.remove('active'));
     document.querySelector('.cat-chip').classList.add('active');
