@@ -1523,57 +1523,81 @@
       container.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24"><path d="M12 20V10M18 20V4M6 20v-6"/></svg><p>Aucune commande enregistrée.</p></div>';
       return;
     }
-    container.innerHTML = orders.map((o, idx) => {
-      const orderNum = String(orders.length - idx).padStart(3, '0');
+
+    // Regrouper par date
+    const groups = {};
+    orders.forEach((o, idx) => {
+      if (!groups[o.date]) groups[o.date] = [];
+      groups[o.date].push({ o, idx });
+    });
+
+    const today = new Date().toLocaleDateString('fr-FR');
+
+    container.innerHTML = Object.entries(groups).map(([date, items]) => {
+      const dayTotal = items.reduce((s, { o }) => s + parseFloat(o.total), 0);
+      const isToday = date === today;
+      const label = isToday ? '📅 Aujourd\'hui' : date;
+
+      const cardsHTML = items.map(({ o, idx }) => {
+        const orderNum = String(orders.length - idx).padStart(3, '0');
+        return `
+        <div class="order-card">
+          <div class="order-card-header" onclick="toggleOrder(${idx})">
+            <div>
+              <div class="order-num">#${orderNum}</div>
+              ${o.discount > 0 ? '<div class="order-discount-pill">Remise ' + o.discount + '%</div>' : ''}
+              ${o.tvaEnabled && o.tvaRate > 0 ? '<div class="order-discount-pill" style="background:#ede9fe;color:#5b21b6;">TVA ' + o.tvaRate + '%</div>' : ''}
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div class="order-total">${parseFloat(o.total).toFixed(2).replace('.',',')} €</div>
+              <svg class="order-chevron" id="chevron-${idx}" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+          </div>
+          <div class="order-body" id="order-body-${idx}">
+            ${o.items.map(item => `<div class="order-line">
+              <span class="order-line-name">${item.ref} – ${item.name}<br><small style="color:var(--text-3)">${item.qty} colis × ${item.colis} pcs · ${item.color}</small></span>
+              <span class="order-line-val">${(item.price * item.qty * item.colis).toFixed(2)} €</span>
+            </div>`).join('')}
+            <div class="order-export-row">
+              <button class="order-export-btn" onclick="openPreview(${idx})">
+                <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                Aperçu
+              </button>
+              <button class="order-export-btn" style="background:var(--green-light);color:#15803d;border-color:#86efac;" onclick="previewOrderIndex=${idx};printPreparation()">
+                <svg viewBox="0 0 24 24" style="stroke:#15803d"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>
+                Préparation
+              </button>
+              <button class="order-export-btn" onclick="previewOrderIndex=${idx};shareOrderText()">
+                <svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                Partager
+              </button>
+              <button class="order-export-btn" onclick="previewOrderIndex=${idx};exportOrderPDF()">
+                <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                PDF
+              </button>
+            </div>
+            <div class="order-actions">
+              <button class="btn-secondary" style="flex:1;justify-content:center;" onclick="openPreview(${idx})">
+                <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                Aperçu
+              </button>
+              <button class="btn-secondary" onclick="deleteOrder(${idx})" style="color:var(--red);border-color:var(--red);background:var(--red-light);">
+                <svg viewBox="0 0 24 24" style="stroke:var(--red)"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+                Supprimer
+              </button>
+            </div>
+          </div>
+        </div>`;
+      }).join('');
+
       return `
-      <div class="order-card">
-        <div class="order-card-header" onclick="toggleOrder(${idx})">
-          <div>
-            <div class="order-num">#${orderNum}</div>
-            <div class="order-date">${o.date}</div>
-            ${o.discount > 0 ? '<div class="order-discount-pill">Remise ' + o.discount + '%</div>' : ''}
-            ${o.tvaEnabled && o.tvaRate > 0 ? '<div class="order-discount-pill" style="background:#ede9fe;color:#5b21b6;">TVA ' + o.tvaRate + '%</div>' : ''}
+        <div style="margin-bottom:4px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 16px 6px;">
+            <span style="font-size:13px;font-weight:700;color:${isToday ? 'var(--accent)' : 'var(--text-2)'};">${label}</span>
+            <span style="font-size:13px;font-family:'DM Mono',monospace;font-weight:700;color:${isToday ? 'var(--accent)' : 'var(--text-1)'};">${dayTotal.toFixed(2).replace('.',',')} €</span>
           </div>
-          <div style="display:flex;align-items:center;gap:10px;">
-            <div class="order-total">${parseFloat(o.total).toFixed(2).replace('.',',')} €</div>
-            <svg class="order-chevron" id="chevron-${idx}" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
-          </div>
-        </div>
-        <div class="order-body" id="order-body-${idx}">
-          ${o.items.map(item => `<div class="order-line">
-            <span class="order-line-name">${item.ref} – ${item.name}<br><small style="color:var(--text-3)">${item.qty} colis × ${item.colis} pcs</small></span>
-            <span class="order-line-val">${(item.price * item.qty * item.colis).toFixed(2)} €</span>
-          </div>`).join('')}
-          <div class="order-export-row">
-            <button class="order-export-btn" onclick="openPreview(${idx})">
-              <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-              Aperçu
-            </button>
-            <button class="order-export-btn" style="background:#dcfce7;color:#15803d;border-color:#86efac;" onclick="previewOrderIndex=${idx};printPreparation()">
-              <svg viewBox="0 0 24 24" style="stroke:#15803d"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>
-              Préparation
-            </button>
-            <button class="order-export-btn" onclick="previewOrderIndex=${idx};shareOrderText()">
-              <svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-              Partager
-            </button>
-            <button class="order-export-btn" onclick="previewOrderIndex=${idx};exportOrderPDF()">
-              <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-              PDF
-            </button>
-          </div>
-          <div class="order-actions">
-            <button class="btn-secondary" style="flex:1;justify-content:center;" onclick="openPreview(${idx})">
-              <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-              Aperçu
-            </button>
-            <button class="btn-secondary" onclick="deleteOrder(${idx})" style="color:var(--red);border-color:var(--red);background:var(--red-light);">
-              <svg viewBox="0 0 24 24" style="stroke:var(--red)"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
-              Supprimer
-            </button>
-          </div>
-        </div>
-      </div>`;
+          ${cardsHTML}
+        </div>`;
     }).join('');
   }
 
