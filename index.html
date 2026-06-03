@@ -8,7 +8,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="YEEVA">
+  <meta name="apple-mobile-web-app-title" content="Wholesale">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="manifest.json">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -278,7 +278,7 @@
   <div class="header-brand">
     <div class="header-logo" id="header-logo">Y</div>
     <div>
-      <div class="header-title" id="header-title">YEEVA Seller</div>
+      <div class="header-title" id="header-title">Wholesale</div>
       <div class="header-sub" id="header-sub">Prise de commande grossiste</div>
     </div>
   </div>
@@ -291,7 +291,7 @@
 
 <div class="install-banner" id="install-banner">
   <div class="install-banner-text">
-    <strong>Installer YEEVA Seller</strong>
+    <strong>Installer Wholesale</strong>
     Ajoutez l'app à votre écran d'accueil
   </div>
   <button class="install-banner-btn" onclick="installApp()">Installer</button>
@@ -348,6 +348,12 @@
   <div id="cart-items"></div>
   <div class="cart-content-spacer"></div>
   <div class="cart-footer">
+    <div style="margin-bottom:10px;">
+      <div style="display:flex;align-items:center;gap:8px;background:var(--surface-3);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:8px 12px;">
+        <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:var(--text-3);fill:none;stroke-width:2;flex-shrink:0;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <input type="text" id="order-name" placeholder="Nom du client (optionnel)" style="border:none;background:none;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text-1);outline:none;flex:1;width:100%;">
+      </div>
+    </div>
     <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
       <div class="discount-row" style="margin:0;flex:1;min-width:120px;">
         <span class="discount-badge">Remise</span>
@@ -612,7 +618,7 @@
 
   // ===== RÉGLAGES =====
   let settings = JSON.parse(localStorage.getItem('yeeva_settings')) || {
-    company: 'YEEVA Seller',
+    company: 'Wholesale',
     subtitle: 'Prise de commande grossiste',
     initial: 'Y'
   };
@@ -637,7 +643,7 @@
   }
 
   function saveSettings() {
-    settings.company = document.getElementById('s-company').value.trim() || 'YEEVA Seller';
+    settings.company = document.getElementById('s-company').value.trim() || 'Wholesale';
     settings.subtitle = document.getElementById('s-subtitle').value.trim() || 'Prise de commande grossiste';
     settings.initial = document.getElementById('s-initial').value.trim().toUpperCase() || settings.company.charAt(0).toUpperCase();
     localStorage.setItem('yeeva_settings', JSON.stringify(settings));
@@ -1038,6 +1044,7 @@
     cart = [];
     document.getElementById('discount').value = 0;
     document.getElementById('tva-enabled').checked = false;
+      document.getElementById('order-name').value = '';
     document.getElementById('transport').value = 0;
     updateCart();
     showTab(3);
@@ -1132,6 +1139,7 @@
     const orderData = {
       id: Date.now(),
       date: new Date().toLocaleDateString('fr-FR'),
+      name: document.getElementById('order-name').value.trim() || '',
       total: finalTotal.toFixed(2),
       totalHT: totalHT.toFixed(2),
       discount,
@@ -1148,6 +1156,7 @@
       saveData(); cart = []; localStorage.removeItem('yeeva_cart');
       document.getElementById('discount').value = 0;
       document.getElementById('tva-enabled').checked = false;
+      document.getElementById('order-name').value = '';
       document.getElementById('transport').value = 0;
       updateCart(); showTab(3);
       setTimeout(() => {
@@ -1166,6 +1175,7 @@
       saveData(); cart = []; localStorage.removeItem('yeeva_cart');
       document.getElementById('discount').value = 0;
       document.getElementById('tva-enabled').checked = false;
+      document.getElementById('order-name').value = '';
       document.getElementById('transport').value = 0;
       updateCart(); showTab(3);
     }
@@ -1248,6 +1258,7 @@
         <div class="bon-meta">
           <div class="bon-num">BON #${getOrderNum(idx)}</div>
           <div class="bon-date">${o.date}</div>
+          ${o.name ? `<div style="font-size:13px;font-weight:600;color:var(--text-1);margin-top:4px;">👤 ${o.name}</div>` : ''}
           ${tvaInfoBadge}
         </div>
       </div>
@@ -1271,7 +1282,7 @@
         ${o.transport > 0 ? `<div class="bon-total-row"><span>🚚 Transport</span><span>+${parseFloat(o.transport).toFixed(2)} €</span></div>` : ''}
         <div class="bon-total-row final"><span>${totalLabel}</span><span>${total.toFixed(2).replace('.',',')} €</span></div>
       </div>
-      <div class="bon-footer-note">Bon généré par YEEVA Seller · ${new Date().toLocaleDateString('fr-FR')}</div>`;
+      <div class="bon-footer-note">Bon généré par Wholesale · ${new Date().toLocaleDateString('fr-FR')}</div>`;
   }
 
   function openPreview(idx) {
@@ -1544,7 +1555,7 @@
         <div class="order-card">
           <div class="order-card-header" onclick="toggleOrder(${idx})">
             <div>
-              <div class="order-num">#${orderNum}</div>
+              <div class="order-num">#${orderNum}${o.name ? ' · ' + o.name.replace(/'/g, "\\'") : ''}</div>
               ${o.discount > 0 ? '<div class="order-discount-pill">Remise ' + o.discount + '%</div>' : ''}
               ${o.tvaEnabled && o.tvaRate > 0 ? '<div class="order-discount-pill" style="background:#ede9fe;color:#5b21b6;">TVA ' + o.tvaRate + '%</div>' : ''}
             </div>
@@ -1604,7 +1615,9 @@
   function toggleOrder(idx) {
     const body = document.getElementById('order-body-' + idx);
     const chevron = document.getElementById('chevron-' + idx);
-    body.classList.toggle('open'); chevron.classList.toggle('open');
+    const isOpen = body.style.display === 'block';
+    body.style.display = isOpen ? 'none' : 'block';
+    if (chevron) chevron.style.transform = isOpen ? '' : 'rotate(180deg)';
   }
   function editOrder(idx) {
     editingOrderIndex = idx;
@@ -1618,6 +1631,7 @@
     document.getElementById('tva-enabled').checked = tvaEnabled;
     document.getElementById('tva-rate').value = tvaRate;
     document.getElementById('transport').value = orders[idx].transport || 0;
+    document.getElementById('order-name').value = orders[idx].name || '';
     updateCart();
     showTab(2); // Ouvre le panier pour modifier quantités/prix
     toast('✏️ Modifiez les quantités et prix, puis validez');
@@ -1635,6 +1649,7 @@
     document.getElementById('tva-enabled').checked = tvaEnabled;
     document.getElementById('tva-rate').value = tvaRate;
     document.getElementById('transport').value = orders[idx].transport || 0;
+    document.getElementById('order-name').value = orders[idx].name || '';
     activeCat = '';
     document.querySelectorAll('.cat-chip').forEach(c => c.classList.remove('active'));
     document.querySelector('.cat-chip').classList.add('active');
