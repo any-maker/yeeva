@@ -1358,6 +1358,7 @@
         <div class="bon-meta">
           <div class="bon-num">BON #${getOrderNum(idx)}</div>
           <div class="bon-date">${o.date}</div>
+          ${o.name ? `<div style="font-size:13px;font-weight:700;color:#0f172a;margin-top:4px;">👤 ${o.name}</div>` : ''}
           <div style="font-size:11px;background:#dcfce7;color:#15803d;padding:2px 8px;border-radius:20px;font-weight:600;margin-top:4px;display:inline-block;">PRÉPARATION</div>
         </div>
       </div>
