@@ -349,9 +349,13 @@
   <div class="cart-content-spacer"></div>
   <div class="cart-footer">
     <div style="margin-bottom:10px;">
-      <div style="display:flex;align-items:center;gap:8px;background:var(--surface-3);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:8px 12px;">
+      <div style="display:flex;align-items:center;gap:8px;background:var(--surface-3);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:8px 12px;margin-bottom:8px;">
         <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:var(--text-3);fill:none;stroke-width:2;flex-shrink:0;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
         <input type="text" id="order-name" placeholder="Nom du client (optionnel)" style="border:none;background:none;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text-1);outline:none;flex:1;width:100%;">
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:8px;background:var(--surface-3);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:8px 12px;">
+        <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:var(--text-3);fill:none;stroke-width:2;flex-shrink:0;margin-top:1px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        <textarea id="order-note" placeholder="Note / commentaire (optionnel)" rows="2" style="border:none;background:none;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text-1);outline:none;flex:1;width:100%;resize:none;line-height:1.4;"></textarea>
       </div>
     </div>
     <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
@@ -1045,6 +1049,7 @@
     document.getElementById('discount').value = 0;
     document.getElementById('tva-enabled').checked = false;
       document.getElementById('order-name').value = '';
+      document.getElementById('order-note').value = '';
     document.getElementById('transport').value = 0;
     updateCart();
     showTab(3);
@@ -1140,6 +1145,7 @@
       id: Date.now(),
       date: new Date().toLocaleDateString('fr-FR'),
       name: document.getElementById('order-name').value.trim() || '',
+      note: document.getElementById('order-note').value.trim() || '',
       total: finalTotal.toFixed(2),
       totalHT: totalHT.toFixed(2),
       discount,
@@ -1157,6 +1163,7 @@
       document.getElementById('discount').value = 0;
       document.getElementById('tva-enabled').checked = false;
       document.getElementById('order-name').value = '';
+      document.getElementById('order-note').value = '';
       document.getElementById('transport').value = 0;
       updateCart(); showTab(3);
       setTimeout(() => {
@@ -1176,6 +1183,7 @@
       document.getElementById('discount').value = 0;
       document.getElementById('tva-enabled').checked = false;
       document.getElementById('order-name').value = '';
+      document.getElementById('order-note').value = '';
       document.getElementById('transport').value = 0;
       updateCart(); showTab(3);
     }
@@ -1282,6 +1290,7 @@
         ${o.transport > 0 ? `<div class="bon-total-row"><span>🚚 Transport</span><span>+${parseFloat(o.transport).toFixed(2)} €</span></div>` : ''}
         <div class="bon-total-row final"><span>${totalLabel}</span><span>${total.toFixed(2).replace('.',',')} €</span></div>
       </div>
+      ${o.note ? `<div style="margin-top:16px;padding:10px 12px;background:#fef3c7;border-radius:6px;color:#92400e;font-size:12px;border-left:3px solid #fbbf24;">📝 Note : ${o.note}</div>` : ''}
       <div class="bon-footer-note">Bon généré par Wholesale · ${new Date().toLocaleDateString('fr-FR')}</div>`;
   }
 
@@ -1556,6 +1565,7 @@
           <div class="order-card-header" onclick="toggleOrder(${idx})">
             <div>
               <div class="order-num">#${orderNum}${o.name ? ' · ' + o.name.replace(/'/g, "\\'") : ''}</div>
+              ${o.note ? `<div style="font-size:11px;color:#92400e;background:#fef3c7;border-radius:4px;padding:2px 8px;margin-top:4px;display:inline-block;">📝 ${o.note}</div>` : ''}
               ${o.discount > 0 ? '<div class="order-discount-pill">Remise ' + o.discount + '%</div>' : ''}
               ${o.tvaEnabled && o.tvaRate > 0 ? '<div class="order-discount-pill" style="background:#ede9fe;color:#5b21b6;">TVA ' + o.tvaRate + '%</div>' : ''}
             </div>
@@ -1569,6 +1579,7 @@
               <span class="order-line-name">${item.ref} – ${item.name}<br><small style="color:var(--text-3)">${item.qty} colis × ${item.colis} pcs · ${item.color}</small></span>
               <span class="order-line-val">${(item.price * item.qty * item.colis).toFixed(2)} €</span>
             </div>`).join('')}
+            ${o.note ? `<div style="margin:8px 16px;padding:8px 12px;background:var(--amber-light);border-radius:var(--radius-sm);font-size:12px;color:#92400e;border-left:3px solid #fbbf24;">📝 ${o.note}</div>` : ''}
             <div class="order-export-row">
               <button class="order-export-btn" onclick="openPreview(${idx})">
                 <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
@@ -1632,6 +1643,7 @@
     document.getElementById('tva-rate').value = tvaRate;
     document.getElementById('transport').value = orders[idx].transport || 0;
     document.getElementById('order-name').value = orders[idx].name || '';
+    document.getElementById('order-note').value = orders[idx].note || '';
     updateCart();
     showTab(2); // Ouvre le panier pour modifier quantités/prix
     toast('✏️ Modifiez les quantités et prix, puis validez');
@@ -1650,6 +1662,7 @@
     document.getElementById('tva-rate').value = tvaRate;
     document.getElementById('transport').value = orders[idx].transport || 0;
     document.getElementById('order-name').value = orders[idx].name || '';
+    document.getElementById('order-note').value = orders[idx].note || '';
     activeCat = '';
     document.querySelectorAll('.cat-chip').forEach(c => c.classList.remove('active'));
     document.querySelector('.cat-chip').classList.add('active');
