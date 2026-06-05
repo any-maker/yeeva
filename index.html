@@ -400,24 +400,16 @@
 <div id="tab-orders" class="tab">
   <div class="section-header">
     <span class="section-title" id="orders-count">Historique</span>
-    <div style="display:flex;gap:6px;flex-wrap:wrap;">
+    <div style="display:flex;gap:6px;">
       <button class="btn-secondary" onclick="exportFullBackup()" style="background:#dcfce7;border-color:#86efac;color:#15803d;">
         <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        Sauvegarde
+        Sauvegarder
       </button>
       <button class="btn-secondary" onclick="document.getElementById('import-full-input').click()" style="background:#e0f2fe;border-color:#7dd3fc;color:#0369a1;">
         <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         Restaurer
       </button>
       <input type="file" id="import-full-input" accept=".json" style="display:none;" onchange="importFullBackup(event)">
-      <button class="btn-secondary" onclick="exportAllOrders()">
-        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        Commandes
-      </button>
-      <button class="btn-secondary" onclick="document.getElementById('import-orders-input').click()">
-        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        Importer
-      </button>
       <input type="file" id="import-orders-input" accept=".json" style="display:none;" onchange="importOrders(event)">
     </div>
   </div>
