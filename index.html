@@ -1794,6 +1794,24 @@
     }
   }
 
+  function updateStockCardTotal(productId) {
+    const p = products.find(x => x.id === productId);
+    if (!p) return;
+    const seuil = parseInt(document.getElementById('stock-seuil')?.value) || 5;
+    const colors = p.color && p.color !== '-' ? p.color.split(',').map(c => c.trim()) : ['standard'];
+    const totalStock = colors.reduce((s, c) => { const q = getStock(p.id, c); return s + (q !== null ? q : 0); }, 0);
+    const hasLow = colors.some(c => { const q = getStock(p.id, c); return q !== null && q <= seuil; });
+    const card = document.querySelector(`#sc-${productId}`)?.closest('.stock-card');
+    if (!card) return;
+    const totalEl = card.querySelector('.stock-card-total');
+    const badgeEl = card.querySelector('.stock-badge');
+    if (totalEl) totalEl.textContent = totalStock + ' colis';
+    if (badgeEl) {
+      if (hasLow) { badgeEl.className = 'stock-badge low'; badgeEl.textContent = '⚠ Stock bas'; }
+      else { badgeEl.className = 'stock-badge ok'; badgeEl.textContent = '✓ OK'; }
+    }
+  }
+
   function renderStock() {
     const seuil = parseInt(document.getElementById('stock-seuil').value) || 5;
     const alertsEl = document.getElementById('stock-alerts');
@@ -1856,7 +1874,7 @@
               <input class="stock-input ${q === null ? '' : isLow ? 'low' : 'ok'}"
                 type="number" min="0" placeholder="—"
                 value="${q !== null ? q : ''}"
-                oninput="setStock(${p.id}, '${c}', parseInt(this.value)||0); renderStock()">
+                oninput="setStock(${p.id}, '${c}', parseInt(this.value)||0); updateStockAlertBadge(); updateStockCardTotal(${p.id})">
               <span style="font-size:11px;color:var(--text-3);">colis</span>
             </div>`;
           }).join('')}
